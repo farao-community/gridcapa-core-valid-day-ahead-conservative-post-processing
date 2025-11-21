@@ -41,7 +41,7 @@
     </developers>
 
     <modules>
-        <module>gridcapa-core-valid-day-ahead-conservative-post-processing</module>
+        <module>gridcapa-core-valid-day-ahead-conservative-post-processing-app</module>
     </modules>
 
 
