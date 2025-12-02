@@ -177,7 +177,7 @@ public final class DailyF310FileMapper {
         final TimeIntervalType branchTimeInterval = new TimeIntervalType();
         branchTimeInterval.setV(taskDateTimeInterval);
         adjustmentValue.setTimeInterval(branchTimeInterval);
-        adjustmentValue.setIVA(Integer.valueOf(ivaBranchData.getConservativeIva()).floatValue());
+        adjustmentValue.setIVA(ivaBranchData.getConservativeIva().floatValue());
         final Vertex worstVertex = ivaBranchData.getWorstVertices().getFirst().vertex();
         adjustmentValue.setJustification(justificationMessage + " vertex " + worstVertex.vertexId());
         final ReportingInformationType reportingInformation = new ReportingInformationType();
