@@ -112,9 +112,9 @@ public final class DailyF310FileMapper {
             if (ivaBranches != null && !ivaBranches.isEmpty()) {
                 final String taskDateTimeInterval = getOneHourConstraintTimeInterval(task.getTimestamp(), zoneId);
                 final String justificationMessage = getJustificationMessage(task.getParameters());
-                ivaBranches.forEach(ivaBranchData -> {
-                    generateReturnedBranchesAndAdjustments(ivaBranchData, taskDateTimeInterval, returnedBranches, adjustmentValues, justificationMessage);
-                });
+                ivaBranches.forEach(ivaBranchData ->
+                    generateReturnedBranchesAndAdjustments(ivaBranchData, taskDateTimeInterval, returnedBranches, adjustmentValues, justificationMessage)
+                );
             }
         });
         if (!returnedBranches.getReturnedBranch().isEmpty()) {
@@ -130,11 +130,11 @@ public final class DailyF310FileMapper {
                 .filter(
                         taskParameterDto -> CoreValidD2PostProcessingConstants.STRING_TYPE.equalsIgnoreCase(taskParameterDto.getParameterType())
                                             && CoreValidD2PostProcessingConstants.JUSTIFICATION_MESSAGE_ID.equalsIgnoreCase(taskParameterDto.getId()))
-                .map(taskParameterDto -> {
-                    return taskParameterDto.getValue() != null
+                .map(taskParameterDto ->
+                    taskParameterDto.getValue() != null
                             ? taskParameterDto.getValue()
-                            : taskParameterDto.getDefaultValue();
-                })
+                            : taskParameterDto.getDefaultValue()
+                )
                 .findFirst()
                 .orElseThrow(() -> new CoreValidD2PostProcessingInvalidDataException("No justification message found"));
 
@@ -195,7 +195,7 @@ public final class DailyF310FileMapper {
         return adjustmentValue;
     }
 
-    private static void generateCreationTime(final FlowBasedConstraintUpdateDocument constraintUpdateDocument) throws DatatypeConfigurationException {
+    private static void generateCreationTime(final FlowBasedConstraintUpdateDocument constraintUpdateDocument) {
         final MessageDateTimeType creationDateTime = new MessageDateTimeType();
         final ZonedDateTime now = ZonedDateTime.now(ZoneId.of(CoreValidD2PostProcessingConstants.UTC_ZONE_ID));
         final XMLGregorianCalendar date = getXmlGregorianCalendar(now);
