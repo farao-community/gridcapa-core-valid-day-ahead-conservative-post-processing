@@ -26,7 +26,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import javax.xml.XMLConstants;
-import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.namespace.QName;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -74,8 +73,7 @@ public class PostProcessingService {
             try (final InputStream inputStream = new ByteArrayInputStream(outputFileData)) {
                 minioAdapter.uploadOutput(outputsTargetMinioFolder + outputFileName, inputStream);
             }
-        } catch (DatatypeConfigurationException | IOException e) {
-            LOGGER.error("Could not generate flow based constraint update document file for core valid D2", e);
+        } catch (IOException e) {
             throw new CoreValidD2PostProcessingInternalException("Could not generate flow based constraint update document file", e);
         }
     }
@@ -108,7 +106,6 @@ public class PostProcessingService {
             return objectMapper.reader().forType(new TypeReference<List<IvaBranchData>>() {
             }).readValue(inputStream);
         } catch (final IOException e) {
-            LOGGER.error("Error retrieving Iva Result", e);
             throw new CoreValidD2PostProcessingInvalidDataException("Error retrieving Iva Result", e);
         }
     }

@@ -26,7 +26,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import javax.xml.datatype.DatatypeConfigurationException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.LocalDate;
@@ -49,11 +48,7 @@ class DailyF310FileMapperTest {
         final LocalDate date = LocalDate.of(2025, 12, 1);
         final int testOutputVersion = 3;
         final FlowBasedConstraintUpdateDocument document = new FlowBasedConstraintUpdateDocument();
-        try {
-            DailyF310FileMapper.generateHeader(date, testOutputVersion, document, ZONE_ID);
-        } catch (DatatypeConfigurationException e) {
-            fail();
-        }
+        DailyF310FileMapper.generateHeader(date, testOutputVersion, document, ZONE_ID);
         Assertions.assertThat(document).isNotNull();
         Assertions.assertThat(document.getDocumentVersion().getV()).isEqualTo(testOutputVersion);
         Assertions.assertThat(document.getDocumentIdentification().getV())
@@ -76,11 +71,7 @@ class DailyF310FileMapperTest {
         final LocalDate date = LocalDate.of(2025, 12, 1);
         final int testOutputVersion = 2;
         final FlowBasedConstraintUpdateDocument document = new FlowBasedConstraintUpdateDocument();
-        try {
-            DailyF310FileMapper.generateHeader(date, testOutputVersion, document, ZoneId.of("Asia/Tokyo"));
-        } catch (DatatypeConfigurationException e) {
-            fail();
-        }
+        DailyF310FileMapper.generateHeader(date, testOutputVersion, document, ZoneId.of("Asia/Tokyo"));
         Assertions.assertThat(document).isNotNull();
         Assertions.assertThat(document.getDocumentVersion().getV()).isEqualTo(testOutputVersion);
         Assertions.assertThat(document.getDocumentIdentification().getV())
@@ -134,11 +125,11 @@ class DailyF310FileMapperTest {
 
     private Map<TaskDto, List<IvaBranchData>> getTestMap() {
         final Map<TaskDto, List<IvaBranchData>>  testMap = new LinkedHashMap<>();
-        testMap.put(getTestTaskDto(OffsetDateTime.of(2025, 11, 28, 12, 0, 0, 0, ZoneOffset.UTC)),
+        testMap.put(getTestTaskDto(OffsetDateTime.of(2025, 11, 28, 12, 0, 0, 0, ZoneOffset.UTC), false),
                     getTestIvaBranches());
-        testMap.put(getTestTaskDto(OffsetDateTime.of(2025, 11, 28, 13, 0, 0, 0, ZoneOffset.UTC)),
+        testMap.put(getTestTaskDto(OffsetDateTime.of(2025, 11, 28, 13, 0, 0, 0, ZoneOffset.UTC), false),
                     getTestIvaBranches());
-        testMap.put(getTestTaskDto(OffsetDateTime.of(2025, 11, 28, 14, 0, 0, 0, ZoneOffset.UTC)),
+        testMap.put(getTestTaskDto(OffsetDateTime.of(2025, 11, 28, 14, 0, 0, 0, ZoneOffset.UTC), true),
                     getTestIvaBranches());
         return testMap;
     }
@@ -155,7 +146,7 @@ class DailyF310FileMapperTest {
         return List.of();
     }
 
-    private static TaskDto getTestTaskDto(final OffsetDateTime timestamp) {
+    private static TaskDto getTestTaskDto(final OffsetDateTime timestamp, boolean isOnlyDefaultMessage) {
         return new TaskDto(UUID.randomUUID(),
                            timestamp,
                            TaskStatus.SUCCESS,
@@ -165,7 +156,10 @@ class DailyF310FileMapperTest {
                            List.of(),
                            List.of(new ProcessRunDto(UUID.randomUUID(), timestamp, List.of()),
                                    new ProcessRunDto(UUID.randomUUID(), timestamp, List.of())),
-                           List.of(new TaskParameterDto(CoreValidD2PostProcessingConstants.JUSTIFICATION_MESSAGE_ID, CoreValidD2PostProcessingConstants.STRING_TYPE, "justification message", "defaualt message"))
+                           List.of(new TaskParameterDto(CoreValidD2PostProcessingConstants.JUSTIFICATION_MESSAGE_ID,
+                                                        CoreValidD2PostProcessingConstants.STRING_TYPE,
+                                                        isOnlyDefaultMessage ? null : "justification message",
+                                                        "defaualt message"))
         );
     }
 }

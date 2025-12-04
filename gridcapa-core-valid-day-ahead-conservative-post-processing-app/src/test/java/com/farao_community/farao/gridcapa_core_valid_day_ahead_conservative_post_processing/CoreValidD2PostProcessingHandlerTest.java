@@ -48,41 +48,63 @@ class CoreValidD2PostProcessingHandlerTest {
     MinioAdapter minioAdapter;
 
     @Test
-    void consumeTaskDtoUpdate() {
-        TaskDto taskDto = getTestTaskDto();
-        TaskDto[] tasks = {taskDto};
-        Flux<TaskDto> taskDtoFlux = Flux.fromStream(Stream.of(taskDto));
-        Consumer<Flux<TaskDto>> consumer = coreValidD2PostProcessingHandler.consumeTaskDtoUpdate();
-        RestTemplate restTemplate = Mockito.mock(RestTemplate.class);
-        ResponseEntity response1 = Mockito.mock(ResponseEntity.class);
+    void consumeTaskDtoUpdateOK() {
+        final TaskDto taskDto = getTestTaskDto(true);
+        final TaskDto[] tasks = {taskDto};
+        final Flux<TaskDto> taskDtoFlux = Flux.fromStream(Stream.of(taskDto));
+        final Consumer<Flux<TaskDto>> consumer = coreValidD2PostProcessingHandler.consumeTaskDtoUpdate();
+        final RestTemplate restTemplate = Mockito.mock(RestTemplate.class);
+        final ResponseEntity response1 = Mockito.mock(ResponseEntity.class);
         Mockito.when(response1.getStatusCode()).thenReturn(HttpStatus.OK);
         Mockito.when(response1.getBody()).thenReturn(Boolean.TRUE);
-        ResponseEntity response2 = Mockito.mock(ResponseEntity.class);
+        final ResponseEntity response2 = Mockito.mock(ResponseEntity.class);
         Mockito.when(response2.getStatusCode()).thenReturn(HttpStatus.OK);
         Mockito.when(response2.getBody()).thenReturn(tasks);
-        Mockito.when(restTemplate.getForEntity(Mockito.eq("http://test-dummy/tasks/businessdate/2025-11-28/allOver"), Mockito.eq(Boolean.class))).thenReturn(response1);
-        Mockito.when(restTemplate.getForEntity(Mockito.eq("http://test-dummy/tasks/businessdate/2025-11-28"), Mockito.eq(TaskDto[].class))).thenReturn(response2);
+        Mockito.when(restTemplate.getForEntity("http://test-dummy/tasks/businessdate/2025-11-28/allOver", Boolean.class)).thenReturn(response1);
+        Mockito.when(restTemplate.getForEntity("http://test-dummy/tasks/businessdate/2025-11-28", TaskDto[].class)).thenReturn(response2);
         Mockito.when(restTemplateBuilder.build()).thenReturn(restTemplate);
         try (InputStream in = getClass().getResource("/testBranchIvaFile.json").openStream()) {
-            Mockito.when(minioAdapter.getFileFromFullPath(Mockito.eq("testFilePath"))).thenReturn(in);
+            Mockito.when(minioAdapter.getFileFromFullPath("testFilePath")).thenReturn(in);
             consumer.accept(taskDtoFlux);
         } catch (IOException e) {
             fail();
         }
     }
 
-    private static TaskDto getTestTaskDto() {
+    @Test
+    void consumeTaskDtoUpdateNotAllFinished() {
+        final TaskDto taskDto = getTestTaskDto(true);
+        final TaskDto[] tasks = {taskDto};
+        final Flux<TaskDto> taskDtoFlux = Flux.fromStream(Stream.of(taskDto));
+        final Consumer<Flux<TaskDto>> consumer = coreValidD2PostProcessingHandler.consumeTaskDtoUpdate();
+        final RestTemplate restTemplate = Mockito.mock(RestTemplate.class);
+        final ResponseEntity response1 = Mockito.mock(ResponseEntity.class);
+        Mockito.when(response1.getStatusCode()).thenReturn(HttpStatus.OK);
+        Mockito.when(response1.getBody()).thenReturn(Boolean.FALSE);
+    }
+
+    @Test
+    void consumeTaskDtoUpdateNotFinished() {
+        final TaskDto taskDto = getTestTaskDto(false);
+        final TaskDto[] tasks = {taskDto};
+        final Flux<TaskDto> taskDtoFlux = Flux.fromStream(Stream.of(taskDto));
+        final Consumer<Flux<TaskDto>> consumer = coreValidD2PostProcessingHandler.consumeTaskDtoUpdate();
+    }
+
+    private static TaskDto getTestTaskDto(final boolean isOver) {
         final OffsetDateTime timestamp = OffsetDateTime.of(2025, 11, 28, 12, 0, 0, 0, ZoneOffset.UTC);
         return new TaskDto(UUID.randomUUID(),
                            timestamp,
-                           TaskStatus.SUCCESS,
+                           isOver ? TaskStatus.SUCCESS : TaskStatus.CREATED,
                            List.of(),
                            List.of(),
                            List.of(new ProcessFileDto("testFilePath", "IVA-RESULT", ProcessFileStatus.VALIDATED, "tesFileName", "testDocId", timestamp)),
                            List.of(),
                            List.of(new ProcessRunDto(UUID.randomUUID(), timestamp, List.of()),
                                    new ProcessRunDto(UUID.randomUUID(), timestamp, List.of())),
-                           List.of(new TaskParameterDto(CoreValidD2PostProcessingConstants.JUSTIFICATION_MESSAGE_ID, CoreValidD2PostProcessingConstants.STRING_TYPE, "justification message", "defaualt message"))
+                           List.of(new TaskParameterDto("USE_PROJECTION", "BOOLEAN", "true", "true"),
+                                   new TaskParameterDto("EXCLUDED_BRANCHES", CoreValidD2PostProcessingConstants.STRING_TYPE, "excluded;branches", "defaualt;excluded;branches"),
+                                   new TaskParameterDto(CoreValidD2PostProcessingConstants.JUSTIFICATION_MESSAGE_ID, CoreValidD2PostProcessingConstants.STRING_TYPE, "justification message", "defaualt message"))
                            );
     }
 }

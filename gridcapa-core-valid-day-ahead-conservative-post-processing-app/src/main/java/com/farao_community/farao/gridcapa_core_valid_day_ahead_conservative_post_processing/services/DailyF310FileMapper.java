@@ -65,7 +65,7 @@ public final class DailyF310FileMapper {
     public static void generateHeader(final LocalDate localDate,
                                       final int outputFileVersion,
                                       final FlowBasedConstraintUpdateDocument constraintUpdateDocument,
-                                      final ZoneId zoneId) throws DatatypeConfigurationException {
+                                      final ZoneId zoneId) {
         final String docId = String.format(CoreValidD2PostProcessingConstants.XFR_RTE_Q_STRING_VALUE + "-%s-F310-v%s", localDate.format(DateTimeFormatter.ofPattern("yyyyMMdd")), outputFileVersion);
         final IdentificationType id = new IdentificationType();
         id.setV(docId);
