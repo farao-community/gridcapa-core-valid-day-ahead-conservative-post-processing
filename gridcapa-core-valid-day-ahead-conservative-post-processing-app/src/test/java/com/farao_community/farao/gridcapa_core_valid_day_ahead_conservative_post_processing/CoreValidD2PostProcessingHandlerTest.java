@@ -12,6 +12,7 @@ import com.farao_community.farao.gridcapa.task_manager.api.ProcessRunDto;
 import com.farao_community.farao.gridcapa.task_manager.api.TaskDto;
 import com.farao_community.farao.gridcapa.task_manager.api.TaskParameterDto;
 import com.farao_community.farao.gridcapa.task_manager.api.TaskStatus;
+import com.farao_community.farao.gridcapa_core_valid_day_ahead_conservative_post_processing.services.PostProcessingService;
 import com.farao_community.farao.minio_adapter.starter.MinioAdapter;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -26,6 +27,7 @@ import reactor.core.publisher.Flux;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
@@ -45,10 +47,14 @@ class CoreValidD2PostProcessingHandlerTest {
     private RestTemplateBuilder restTemplateBuilder;
 
     @MockitoBean
-    MinioAdapter minioAdapter;
+    private MinioAdapter minioAdapter;
+
+    @MockitoBean
+    private PostProcessingService postProcessingService;
 
     @Test
     void consumeTaskDtoUpdateOK() {
+        Mockito.reset(postProcessingService);
         final TaskDto taskDto = getTestTaskDto(true);
         final TaskDto[] tasks = {taskDto};
         final Flux<TaskDto> taskDtoFlux = Flux.fromStream(Stream.of(taskDto));
@@ -66,6 +72,7 @@ class CoreValidD2PostProcessingHandlerTest {
         try (InputStream in = getClass().getResource("/testBranchIvaFile.json").openStream()) {
             Mockito.when(minioAdapter.getFileFromFullPath("testFilePath")).thenReturn(in);
             consumer.accept(taskDtoFlux);
+            Mockito.verify(postProcessingService, Mockito.atLeastOnce()).processTasks(Mockito.any(LocalDate.class), Mockito.any());
         } catch (IOException e) {
             fail();
         }
@@ -73,22 +80,27 @@ class CoreValidD2PostProcessingHandlerTest {
 
     @Test
     void consumeTaskDtoUpdateNotAllFinished() {
+        Mockito.reset(postProcessingService);
         final TaskDto taskDto = getTestTaskDto(true);
-        final TaskDto[] tasks = {taskDto};
         final Flux<TaskDto> taskDtoFlux = Flux.fromStream(Stream.of(taskDto));
         final Consumer<Flux<TaskDto>> consumer = coreValidD2PostProcessingHandler.consumeTaskDtoUpdate();
         final RestTemplate restTemplate = Mockito.mock(RestTemplate.class);
         final ResponseEntity response1 = Mockito.mock(ResponseEntity.class);
         Mockito.when(response1.getStatusCode()).thenReturn(HttpStatus.OK);
         Mockito.when(response1.getBody()).thenReturn(Boolean.FALSE);
+        Mockito.when(restTemplate.getForEntity("http://test-dummy/tasks/businessdate/2025-11-28/allOver", Boolean.class)).thenReturn(response1);
+        consumer.accept(taskDtoFlux);
+        Mockito.verify(postProcessingService, Mockito.never()).processTasks(Mockito.any(LocalDate.class), Mockito.any());
     }
 
     @Test
     void consumeTaskDtoUpdateNotFinished() {
+        Mockito.reset(postProcessingService);
         final TaskDto taskDto = getTestTaskDto(false);
-        final TaskDto[] tasks = {taskDto};
         final Flux<TaskDto> taskDtoFlux = Flux.fromStream(Stream.of(taskDto));
         final Consumer<Flux<TaskDto>> consumer = coreValidD2PostProcessingHandler.consumeTaskDtoUpdate();
+        consumer.accept(taskDtoFlux);
+        Mockito.verify(postProcessingService, Mockito.never()).processTasks(Mockito.any(LocalDate.class), Mockito.any());
     }
 
     private static TaskDto getTestTaskDto(final boolean isOver) {

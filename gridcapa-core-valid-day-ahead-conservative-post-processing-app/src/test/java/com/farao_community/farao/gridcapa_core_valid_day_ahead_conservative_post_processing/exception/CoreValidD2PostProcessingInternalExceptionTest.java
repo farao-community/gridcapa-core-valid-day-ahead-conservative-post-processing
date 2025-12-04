@@ -9,8 +9,6 @@ package com.farao_community.farao.gridcapa_core_valid_day_ahead_conservative_pos
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 class CoreValidD2PostProcessingInternalExceptionTest {
 
     private static final String TEST_MESSAGE = "testMessage";

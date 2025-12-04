@@ -21,8 +21,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.JAXBElement;
 import jakarta.xml.bind.Marshaller;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import javax.xml.XMLConstants;
@@ -44,7 +42,6 @@ import java.util.stream.Collectors;
 
 @Service
 public class PostProcessingService {
-    private static final Logger LOGGER = LoggerFactory.getLogger(PostProcessingService.class);
     private final MinioAdapter minioAdapter;
     private final CoreValidD2PostProcessingConfiguration properties;
 
