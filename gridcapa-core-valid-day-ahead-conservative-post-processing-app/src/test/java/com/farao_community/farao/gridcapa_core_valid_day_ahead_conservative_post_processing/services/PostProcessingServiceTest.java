@@ -18,11 +18,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.web.client.RestTemplateBuilder;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -42,25 +38,12 @@ class PostProcessingServiceTest {
     private PostProcessingService postProcessingService;
 
     @MockitoBean
-    private RestTemplateBuilder restTemplateBuilder;
-
-    @MockitoBean
     private MinioAdapter minioAdapter;
 
     @Test
-    void consumeTaskDtoUpdateOK() {
+    void processTasksOK() {
         final TaskDto taskDto = getTestTaskDto();
         final Set<TaskDto> tasks = Set.of(taskDto);
-        final RestTemplate restTemplate = Mockito.mock(RestTemplate.class);
-        final ResponseEntity response1 = Mockito.mock(ResponseEntity.class);
-        Mockito.when(response1.getStatusCode()).thenReturn(HttpStatus.OK);
-        Mockito.when(response1.getBody()).thenReturn(Boolean.TRUE);
-        final ResponseEntity response2 = Mockito.mock(ResponseEntity.class);
-        Mockito.when(response2.getStatusCode()).thenReturn(HttpStatus.OK);
-        Mockito.when(response2.getBody()).thenReturn(tasks);
-        Mockito.when(restTemplate.getForEntity("http://test-dummy/tasks/businessdate/2025-11-28/allOver", Boolean.class)).thenReturn(response1);
-        Mockito.when(restTemplate.getForEntity("http://test-dummy/tasks/businessdate/2025-11-28", TaskDto[].class)).thenReturn(response2);
-        Mockito.when(restTemplateBuilder.build()).thenReturn(restTemplate);
         try (InputStream in = getClass().getResource("/testBranchIvaFile.json").openStream()) {
             Mockito.when(minioAdapter.getFileFromFullPath("testFilePath")).thenReturn(in);
             postProcessingService.processTasks(LocalDate.of(2025, 11, 28), tasks);
