@@ -10,11 +10,11 @@ public class CoreValidD2PostProcessingInternalException extends AbstractCoreVali
     private static final int STATUS = 500;
     private static final String CODE = "500-InternalException";
 
-    public CoreValidD2PostProcessingInternalException(String message) {
+    public CoreValidD2PostProcessingInternalException(final String message) {
         super(message);
     }
 
-    public CoreValidD2PostProcessingInternalException(String message, Throwable throwable) {
+    public CoreValidD2PostProcessingInternalException(final String message, final Throwable throwable) {
         super(message, throwable);
     }
 

@@ -12,11 +12,11 @@ package com.farao_community.farao.gridcapa_core_valid_day_ahead_conservative_pos
  */
 public abstract class AbstractCoreValidD2PostProcessingException extends RuntimeException {
 
-    protected AbstractCoreValidD2PostProcessingException(String message) {
+    protected AbstractCoreValidD2PostProcessingException(final String message) {
         super(message);
     }
 
-    protected AbstractCoreValidD2PostProcessingException(String message, Throwable throwable) {
+    protected AbstractCoreValidD2PostProcessingException(final String message, final Throwable throwable) {
         super(message, throwable);
     }
 

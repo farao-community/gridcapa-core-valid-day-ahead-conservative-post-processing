@@ -131,7 +131,7 @@ public class PostProcessingService {
             return stringWriter.toString()
                     .replace(RETURNED_BRANCHES, CoreValidD2PostProcessingConstants.VALIDATION_TYPE_COMMENT + "\n\t" + RETURNED_BRANCHES)
                     .getBytes();
-        } catch (Exception e) {
+        } catch (final Exception e) {
             throw new CoreValidD2PostProcessingInternalException("Exception occurred during constraint update document export.", e);
         }
     }

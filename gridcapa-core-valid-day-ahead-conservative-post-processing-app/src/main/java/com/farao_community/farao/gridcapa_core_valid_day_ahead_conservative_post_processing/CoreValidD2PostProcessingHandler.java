@@ -66,7 +66,7 @@ public class CoreValidD2PostProcessingHandler {
                     }
                 }
             }
-        } catch (Exception e) {
+        } catch (final Exception e) {
             LOGGER.error(e.getMessage(), e);
         }
     }
@@ -83,7 +83,7 @@ public class CoreValidD2PostProcessingHandler {
             if (body != null && responseEntity.getStatusCode() == HttpStatus.OK) {
                 return body;
             }
-        } catch (Exception e) {
+        } catch (final Exception e) {
             LOGGER.error("Error while checking if all hourly tasks are finished.", e);
         }
         return false;
@@ -101,7 +101,7 @@ public class CoreValidD2PostProcessingHandler {
             if (responseEntity.getBody() != null && responseEntity.getStatusCode() == HttpStatus.OK) {
                 return new HashSet<>(Arrays.asList(responseEntity.getBody()));
             }
-        } catch (Exception e) {
+        } catch (final Exception e) {
             LOGGER.error("Error during automatic launch", e);
         }
         LOGGER.warn("Response entity body was null or status was not OK.");

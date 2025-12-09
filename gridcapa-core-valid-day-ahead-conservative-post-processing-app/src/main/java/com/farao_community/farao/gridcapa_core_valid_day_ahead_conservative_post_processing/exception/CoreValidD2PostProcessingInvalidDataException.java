@@ -13,11 +13,11 @@ public class CoreValidD2PostProcessingInvalidDataException extends AbstractCoreV
     private static final int STATUS = 400;
     private static final String CODE = "400-InvalidDataException";
 
-    public CoreValidD2PostProcessingInvalidDataException(String message) {
+    public CoreValidD2PostProcessingInvalidDataException(final String message) {
         super(message);
     }
 
-    public CoreValidD2PostProcessingInvalidDataException(String message, Throwable throwable) {
+    public CoreValidD2PostProcessingInvalidDataException(final String message, final Throwable throwable) {
         super(message, throwable);
     }
 

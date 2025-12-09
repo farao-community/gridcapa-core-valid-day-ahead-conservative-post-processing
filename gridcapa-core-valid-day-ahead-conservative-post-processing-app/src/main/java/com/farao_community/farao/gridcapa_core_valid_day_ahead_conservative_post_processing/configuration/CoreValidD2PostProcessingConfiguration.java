@@ -13,7 +13,7 @@ public class CoreValidD2PostProcessingConfiguration {
     private final UrlProperties url;
     private final ProcessProperties process;
 
-    public CoreValidD2PostProcessingConfiguration(UrlProperties url, ProcessProperties process) {
+    public CoreValidD2PostProcessingConfiguration(final UrlProperties url, final ProcessProperties process) {
         this.url = url;
         this.process = process;
     }
