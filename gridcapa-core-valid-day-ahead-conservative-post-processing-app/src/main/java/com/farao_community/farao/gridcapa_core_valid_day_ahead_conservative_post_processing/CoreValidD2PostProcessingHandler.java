@@ -57,7 +57,7 @@ public class CoreValidD2PostProcessingHandler {
     private void postProcessFinishedTasks(final TaskDto taskDtoUpdated) {
         try {
             if (taskDtoUpdated.getStatus().isOver()) {
-                final LocalDate localDate = taskDtoUpdated.getTimestamp().atZoneSameInstant(ZoneId.of("CET")).toLocalDate();
+                final LocalDate localDate = taskDtoUpdated.getTimestamp().atZoneSameInstant(ZoneId.of(coreValidD2PostProcessingConfiguration.getProcess().timezone())).toLocalDate();
                 if (checkIfAllHourlyTasksAreFinished(localDate)) {
                     final Set<TaskDto> allTaskDtoForBusinessDate = getAllTaskDtoForBusinessDate(localDate);
                     // Only perform post processing if a task from local date was updated

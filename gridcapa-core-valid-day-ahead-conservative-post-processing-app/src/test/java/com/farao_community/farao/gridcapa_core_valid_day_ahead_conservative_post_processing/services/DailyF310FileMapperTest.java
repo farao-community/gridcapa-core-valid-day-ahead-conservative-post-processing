@@ -37,8 +37,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 class DailyF310FileMapperTest {
 
     private static final ZoneId ZONE_ID = ZoneId.of("CET");
@@ -100,7 +98,7 @@ class DailyF310FileMapperTest {
         final ReturnedBranchType firstBranch = document.getReturnedBranches().getReturnedBranch().getFirst();
         Assertions.assertThat(firstBranch.getTimeInterval())
                 .hasFieldOrPropertyWithValue("v", "2025-11-28T11:00Z/2025-11-28T12:00Z");
-        Assertions.assertThat(firstBranch.isCNEC()).isFalse();
+        Assertions.assertThat(firstBranch.isCNEC()).isTrue();
         Assertions.assertThat(firstBranch.getId()).isEqualTo("testId");
         Assertions.assertThat(firstBranch.getReceiverCategory()).isNull();
         Assertions.assertThat(firstBranch.getName()).isEqualTo("testName / testContingency");
@@ -141,9 +139,8 @@ class DailyF310FileMapperTest {
             return objectMapper.reader().forType(new TypeReference<List<IvaBranchData>>() {
             }).readValue(inputStream);
         } catch (IOException e) {
-            fail();
+            throw new RuntimeException("Failed to load test data");
         }
-        return List.of();
     }
 
     private static TaskDto getTestTaskDto(final OffsetDateTime timestamp, boolean isOnlyDefaultMessage) {
@@ -159,7 +156,7 @@ class DailyF310FileMapperTest {
                            List.of(new TaskParameterDto(CoreValidD2PostProcessingConstants.JUSTIFICATION_MESSAGE_ID,
                                                         CoreValidD2PostProcessingConstants.STRING_TYPE,
                                                         isOnlyDefaultMessage ? null : "justification message",
-                                                        "defaualt message"))
+                                                        "default message"))
         );
     }
 }

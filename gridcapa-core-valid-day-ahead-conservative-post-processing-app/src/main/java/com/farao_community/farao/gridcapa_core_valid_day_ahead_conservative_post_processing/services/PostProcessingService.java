@@ -23,7 +23,6 @@ import jakarta.xml.bind.JAXBElement;
 import jakarta.xml.bind.Marshaller;
 import org.springframework.stereotype.Service;
 
-import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -41,7 +40,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import static com.farao_community.farao.gridcapa_core_valid_day_ahead_conservative_post_processing.CoreValidD2PostProcessingConstants.IVA_RESULT;
-import static com.farao_community.farao.gridcapa_core_valid_day_ahead_conservative_post_processing.CoreValidD2PostProcessingConstants.RETURNED_BRANCHES;
+import static com.farao_community.farao.gridcapa_core_valid_day_ahead_conservative_post_processing.CoreValidD2PostProcessingConstants.VALIDATION_TYPE_COMMENT;
+import static com.farao_community.farao.gridcapa_core_valid_day_ahead_conservative_post_processing.CoreValidD2PostProcessingConstants.XSD_FILE_NAME;
 
 @Service
 public class PostProcessingService {
@@ -64,7 +64,9 @@ public class PostProcessingService {
                 .sorted(Comparator.comparing(TaskDto::getTimestamp))
                 .collect(Collectors.toCollection(LinkedHashSet::new));
         fillMapOfOutputs(sortedTasksToProcess, ivaResultsPerTask);
-        FlowBasedConstraintUpdateDocument constraintUpdateDocument = new FlowBasedConstraintUpdateDocument();
+        final FlowBasedConstraintUpdateDocument constraintUpdateDocument = new FlowBasedConstraintUpdateDocument();
+        constraintUpdateDocument.setDtdRelease("4");
+        constraintUpdateDocument.setDtdVersion("0");
         try {
             final ZoneId zoneId = ZoneId.of(properties.getProcess().timezone());
             DailyF310FileMapper.generateHeader(localDate, outputFileVersion, constraintUpdateDocument, zoneId);
@@ -118,19 +120,18 @@ public class PostProcessingService {
         return String.format(CoreValidD2PostProcessingConstants.GENERATED_FILE_PATTERN, date, outputFileVersion);
     }
 
-    private static byte[] marshallMessageAndSetValidationTypeComment(final FlowBasedConstraintUpdateDocument constraintUpdateDocument) {
+    private byte[] marshallMessageAndSetValidationTypeComment(final FlowBasedConstraintUpdateDocument constraintUpdateDocument) {
         try {
             final StringWriter stringWriter = new StringWriter();
             final JAXBContext jaxbContext = JAXBContext.newInstance(FlowBasedConstraintUpdateDocument.class);
             final Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
             jaxbMarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
-            final String flowbased = "flowbased";
-            final QName qName = new QName(XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI, flowbased);
-            final JAXBElement<FlowBasedConstraintUpdateDocument> root = new JAXBElement<>(qName, FlowBasedConstraintUpdateDocument.class, constraintUpdateDocument);
+            jaxbMarshaller.setProperty(Marshaller.JAXB_NO_NAMESPACE_SCHEMA_LOCATION, XSD_FILE_NAME);
+            jaxbMarshaller.setProperty("org.glassfish.jaxb.xmlHeaders", VALIDATION_TYPE_COMMENT + "\n");
+            final QName elementName = jaxbContext.createJAXBIntrospector().getElementName(constraintUpdateDocument);
+            final JAXBElement<FlowBasedConstraintUpdateDocument> root = new JAXBElement<>(elementName, FlowBasedConstraintUpdateDocument.class, constraintUpdateDocument);
             jaxbMarshaller.marshal(root, stringWriter);
-            return stringWriter.toString()
-                    .replace(RETURNED_BRANCHES, CoreValidD2PostProcessingConstants.VALIDATION_TYPE_COMMENT + "\n\t" + RETURNED_BRANCHES)
-                    .getBytes();
+            return stringWriter.toString().getBytes();
         } catch (final Exception e) {
             throw new CoreValidD2PostProcessingInternalException("Exception occurred during constraint update document export.", e);
         }

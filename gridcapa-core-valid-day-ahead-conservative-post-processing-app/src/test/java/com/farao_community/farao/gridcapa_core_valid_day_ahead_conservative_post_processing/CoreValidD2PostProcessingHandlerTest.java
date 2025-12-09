@@ -106,8 +106,8 @@ class CoreValidD2PostProcessingHandlerTest {
                            List.of(new ProcessRunDto(UUID.randomUUID(), timestamp, List.of()),
                                    new ProcessRunDto(UUID.randomUUID(), timestamp, List.of())),
                            List.of(new TaskParameterDto("USE_PROJECTION", "BOOLEAN", "true", "true"),
-                                   new TaskParameterDto("EXCLUDED_BRANCHES", CoreValidD2PostProcessingConstants.STRING_TYPE, "excluded;branches", "defaualt;excluded;branches"),
-                                   new TaskParameterDto(CoreValidD2PostProcessingConstants.JUSTIFICATION_MESSAGE_ID, CoreValidD2PostProcessingConstants.STRING_TYPE, "justification message", "defaualt message"))
+                                   new TaskParameterDto("EXCLUDED_BRANCHES", CoreValidD2PostProcessingConstants.STRING_TYPE, "excluded;branches", "default;excluded;branches"),
+                                   new TaskParameterDto(CoreValidD2PostProcessingConstants.JUSTIFICATION_MESSAGE_ID, CoreValidD2PostProcessingConstants.STRING_TYPE, "justification message", "default message"))
                            );
     }
 }

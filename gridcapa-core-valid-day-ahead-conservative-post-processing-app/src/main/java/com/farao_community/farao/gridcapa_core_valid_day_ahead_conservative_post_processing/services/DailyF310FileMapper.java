@@ -162,7 +162,7 @@ public final class DailyF310FileMapper {
         final TimeIntervalType branchTimeInterval = new TimeIntervalType();
         branchTimeInterval.setV(taskDateTimeInterval);
         branchType.setTimeInterval(branchTimeInterval);
-        branchType.setCNEC(branchType.isCNEC());
+        branchType.setCNEC(true);
         // TODO branchType.setJustification(branch.);
         return branchType;
     }

@@ -47,8 +47,9 @@ class PostProcessingServiceTest {
         try (InputStream in = getClass().getResource("/testBranchIvaFile.json").openStream()) {
             Mockito.when(minioAdapter.getFileFromFullPath("testFilePath")).thenReturn(in);
             postProcessingService.processTasks(LocalDate.of(2025, 11, 28), tasks);
+            Mockito.verify(minioAdapter, Mockito.atLeastOnce()).getFileFromFullPath("testFilePath");
         } catch (IOException e) {
-            fail();
+            fail("Failed to process tasks due to IOException: " + e.getMessage(), e);
         }
     }
 
