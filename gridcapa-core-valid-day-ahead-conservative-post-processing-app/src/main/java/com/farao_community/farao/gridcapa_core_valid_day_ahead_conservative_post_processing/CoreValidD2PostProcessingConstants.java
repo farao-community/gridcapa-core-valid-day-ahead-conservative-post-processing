@@ -18,6 +18,8 @@ public final class CoreValidD2PostProcessingConstants {
     public static final String GENERATED_FILE_PATTERN = "%s-F310-v%s-" + XFR_RTE_Q_STRING_VALUE + "-to-" + XTSO_CS_W_STRING_VALUE + ".xml";
     public static final String VALIDATION_TYPE_COMMENT = "<!--validation type 1-->";
     public static final String DATE_TIME_FORMAT = "yyyy-MM-dd'T'HH:mmX";
+    public static final String RETURNED_BRANCHES = "<ReturnedBranches>";
+    public static final String IVA_RESULT = "IVA-RESULT";
 
     private CoreValidD2PostProcessingConstants() {
         throw new IllegalStateException("Constants class");

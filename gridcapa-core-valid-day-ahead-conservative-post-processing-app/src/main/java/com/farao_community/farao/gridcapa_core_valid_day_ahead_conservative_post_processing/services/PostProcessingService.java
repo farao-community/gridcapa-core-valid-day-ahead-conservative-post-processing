@@ -40,8 +40,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static com.farao_community.farao.gridcapa_core_valid_day_ahead_conservative_post_processing.CoreValidD2PostProcessingConstants.IVA_RESULT;
+import static com.farao_community.farao.gridcapa_core_valid_day_ahead_conservative_post_processing.CoreValidD2PostProcessingConstants.RETURNED_BRANCHES;
+
 @Service
 public class PostProcessingService {
+
     private final MinioAdapter minioAdapter;
     private final CoreValidD2PostProcessingConfiguration properties;
 
@@ -82,7 +86,7 @@ public class PostProcessingService {
                                                .stream()
                                                .filter(processFileDto -> processFileDto.getProcessFileStatus().equals(ProcessFileStatus.VALIDATED))
                                                .forEach(processFileDto -> {
-                                                   if ("IVA-RESULT".equals(processFileDto.getFileType())) {
+                                                   if (IVA_RESULT.equals(processFileDto.getFileType())) {
                                                        ivaResults.put(taskDto, getIvaResult(processFileDto));
                                                    }
                                                })
@@ -125,7 +129,7 @@ public class PostProcessingService {
             final JAXBElement<FlowBasedConstraintUpdateDocument> root = new JAXBElement<>(qName, FlowBasedConstraintUpdateDocument.class, constraintUpdateDocument);
             jaxbMarshaller.marshal(root, stringWriter);
             return stringWriter.toString()
-                    .replace("<ReturnedBranches>", CoreValidD2PostProcessingConstants.VALIDATION_TYPE_COMMENT + "\n\t<ReturnedBranches>")
+                    .replace(RETURNED_BRANCHES, CoreValidD2PostProcessingConstants.VALIDATION_TYPE_COMMENT + "\n\t" + RETURNED_BRANCHES)
                     .getBytes();
         } catch (Exception e) {
             throw new CoreValidD2PostProcessingInternalException("Exception occurred during constraint update document export.", e);
