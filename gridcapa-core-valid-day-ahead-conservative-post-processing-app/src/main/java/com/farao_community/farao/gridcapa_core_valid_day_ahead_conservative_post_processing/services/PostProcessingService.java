@@ -57,7 +57,6 @@ public class PostProcessingService {
     }
 
     public void processTasks(final LocalDate localDate, final Set<TaskDto> tasksToPostProcess) {
-        final String outputsTargetMinioFolder = generateTargetMinioFolder(localDate);
         final int outputFileVersion = getOutputFileVersion(tasksToPostProcess);
         final Map<TaskDto, List<IvaBranchData>> ivaResultsPerTask = new HashMap<>();
         final Set<TaskDto> sortedTasksToProcess = tasksToPostProcess.stream()
@@ -74,7 +73,7 @@ public class PostProcessingService {
             final String outputFileName = getOutputFileName(localDate, outputFileVersion);
             final byte[] outputFileData = marshallMessageAndSetValidationTypeComment(constraintUpdateDocument);
             try (final InputStream inputStream = new ByteArrayInputStream(outputFileData)) {
-                minioAdapter.uploadOutput(outputsTargetMinioFolder + outputFileName, inputStream);
+                minioAdapter.uploadOutput(CoreValidD2PostProcessingConstants.OUTPUTS_DIR + outputFileName, inputStream);
             }
         } catch (IOException e) {
             throw new CoreValidD2PostProcessingInternalException("Could not generate flow based constraint update document file", e);
@@ -97,10 +96,6 @@ public class PostProcessingService {
 
     private static int getOutputFileVersion(final Set<TaskDto> tasksToPostProcess) {
         return tasksToPostProcess.stream().mapToInt(task -> task.getRunHistory().size()).max().orElse(1);
-    }
-
-    private String generateTargetMinioFolder(final LocalDate localDate) {
-        return CoreValidD2PostProcessingConstants.OUTPUTS_DIR + localDate + "/";
     }
 
     private List<IvaBranchData> getIvaResult(final ProcessFileDto processFileDto) {
