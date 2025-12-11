@@ -80,7 +80,7 @@ class DailyF310FileMapperTest {
     @Test
     void generateBodyEmpty() {
         final FlowBasedConstraintUpdateDocument document = new FlowBasedConstraintUpdateDocument();
-        DailyF310FileMapper.generateBody(document, Map.of(), ZONE_ID);
+        DailyF310FileMapper.generateBody(document, Map.of());
         Assertions.assertThat(document.getAdjustmentValues()).isNull();
         Assertions.assertThat(document.getReturnedBranches()).isNull();
     }
@@ -88,7 +88,7 @@ class DailyF310FileMapperTest {
     @Test
     void generateBody() {
         final FlowBasedConstraintUpdateDocument document = new FlowBasedConstraintUpdateDocument();
-        DailyF310FileMapper.generateBody(document, getTestMap(), ZONE_ID);
+        DailyF310FileMapper.generateBody(document, getTestMap());
         Assertions.assertThat(document.getReturnedBranches()).isNotNull();
         Assertions.assertThat(document.getReturnedBranches().getReturnedBranch())
                 .isNotEmpty()
@@ -97,7 +97,7 @@ class DailyF310FileMapperTest {
                 .isNotNull();
         final ReturnedBranchType firstBranch = document.getReturnedBranches().getReturnedBranch().getFirst();
         Assertions.assertThat(firstBranch.getTimeInterval())
-                .hasFieldOrPropertyWithValue("v", "2025-11-28T11:00Z/2025-11-28T12:00Z");
+                .hasFieldOrPropertyWithValue("v", "2025-11-28T12:00Z/2025-11-28T13:00Z");
         Assertions.assertThat(firstBranch.isCNEC()).isTrue();
         Assertions.assertThat(firstBranch.getId()).isEqualTo("testId");
         Assertions.assertThat(firstBranch.getReceiverCategory()).isNull();
@@ -111,7 +111,7 @@ class DailyF310FileMapperTest {
                 .isNotNull();
         final AdjustmentValueType firstAdjustementValue = document.getAdjustmentValues().getAdjustmentValue().getFirst();
         Assertions.assertThat(firstAdjustementValue.getTimeInterval())
-                .hasFieldOrPropertyWithValue("v", "2025-11-28T11:00Z/2025-11-28T12:00Z");
+                .hasFieldOrPropertyWithValue("v", "2025-11-28T12:00Z/2025-11-28T13:00Z");
         Assertions.assertThat(firstAdjustementValue.getCVA()).isNull();
         Assertions.assertThat(firstAdjustementValue.getName()).isEqualTo("testName / testContingency");
         Assertions.assertThat(firstAdjustementValue.getIVA()).isEqualTo(60);

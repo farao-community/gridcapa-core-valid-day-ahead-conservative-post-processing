@@ -104,13 +104,12 @@ public final class DailyF310FileMapper {
     }
 
     public static void generateBody(final FlowBasedConstraintUpdateDocument constraintUpdateDocument,
-                                    final Map<TaskDto, List<IvaBranchData>> ivaResultsPerTask,
-                                    final ZoneId zoneId) {
+                                    final Map<TaskDto, List<IvaBranchData>> ivaResultsPerTask) {
         final ReturnedBranchesType returnedBranches = new ReturnedBranchesType();
         final AdjustmentValuesType adjustmentValues = new AdjustmentValuesType();
         ivaResultsPerTask.forEach((task, ivaBranches) -> {
             if (ivaBranches != null && !ivaBranches.isEmpty()) {
-                final String taskDateTimeInterval = getOneHourConstraintTimeInterval(task.getTimestamp(), zoneId);
+                final String taskDateTimeInterval = getOneHourConstraintTimeInterval(task.getTimestamp());
                 final String justificationMessage = getJustificationMessage(task.getParameters());
                 ivaBranches.forEach(ivaBranchData ->
                     generateReturnedBranchesAndAdjustments(ivaBranchData, taskDateTimeInterval, returnedBranches, adjustmentValues, justificationMessage)
@@ -215,22 +214,22 @@ public final class DailyF310FileMapper {
         });
     }
 
-    private static String getOneHourConstraintTimeInterval(final OffsetDateTime dateTime, final ZoneId zoneId) {
+    private static String getOneHourConstraintTimeInterval(final OffsetDateTime dateTime) {
 
         final OffsetDateTime plusHourDateTime = dateTime.plus(Duration.ofHours(1));
-        final ZonedDateTime startDateTime = getDateAtOffsetConvertedToUtc(dateTime.toLocalDateTime(), zoneId);
-        final ZonedDateTime endDateTime = getDateAtOffsetConvertedToUtc(plusHourDateTime.toLocalDateTime(), zoneId);
-        return getTimeInTerval(startDateTime, endDateTime);
+        final ZonedDateTime startDateTime = dateTime.toZonedDateTime();
+        final ZonedDateTime endDateTime = plusHourDateTime.toZonedDateTime();
+        return getTimeInterval(startDateTime, endDateTime);
     }
 
     private static String getHeaderConstraintTimeInterval(final LocalDate localDate, final ZoneId zoneId) {
         final LocalDateTime localDateTime = localDate.atTime(0, 0);
         final ZonedDateTime startTimestamp = getDateAtOffsetConvertedToUtc(localDateTime, zoneId);
         final ZonedDateTime endTimestamp = getDateAtOffsetConvertedToUtc(localDateTime.plusDays(1), zoneId);
-        return getTimeInTerval(startTimestamp, endTimestamp);
+        return getTimeInterval(startTimestamp, endTimestamp);
     }
 
-    private static String getTimeInTerval(final ZonedDateTime startDateTime, final ZonedDateTime endDateTime) {
+    private static String getTimeInterval(final ZonedDateTime startDateTime, final ZonedDateTime endDateTime) {
         return startDateTime.format(FORMATTER) + "/" + endDateTime.format(FORMATTER);
     }
 

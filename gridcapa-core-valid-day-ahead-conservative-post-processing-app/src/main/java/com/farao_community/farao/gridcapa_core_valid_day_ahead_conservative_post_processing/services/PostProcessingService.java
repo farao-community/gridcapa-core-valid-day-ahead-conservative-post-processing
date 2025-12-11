@@ -28,16 +28,15 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
-import java.util.HashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.TreeMap;
 
 import static com.farao_community.farao.gridcapa_core_valid_day_ahead_conservative_post_processing.CoreValidD2PostProcessingConstants.IVA_RESULT;
 import static com.farao_community.farao.gridcapa_core_valid_day_ahead_conservative_post_processing.CoreValidD2PostProcessingConstants.VALIDATION_TYPE_COMMENT;
@@ -58,18 +57,15 @@ public class PostProcessingService {
 
     public void processTasks(final LocalDate localDate, final Set<TaskDto> tasksToPostProcess) {
         final int outputFileVersion = getOutputFileVersion(tasksToPostProcess);
-        final Map<TaskDto, List<IvaBranchData>> ivaResultsPerTask = new HashMap<>();
-        final Set<TaskDto> sortedTasksToProcess = tasksToPostProcess.stream()
-                .sorted(Comparator.comparing(TaskDto::getTimestamp))
-                .collect(Collectors.toCollection(LinkedHashSet::new));
-        fillMapOfOutputs(sortedTasksToProcess, ivaResultsPerTask);
+        final Map<TaskDto, List<IvaBranchData>> ivaResultsPerTask = new TreeMap<>(Comparator.comparing(TaskDto::getTimestamp));
+        fillMapOfOutputs(tasksToPostProcess, ivaResultsPerTask);
         final FlowBasedConstraintUpdateDocument constraintUpdateDocument = new FlowBasedConstraintUpdateDocument();
         constraintUpdateDocument.setDtdRelease("4");
         constraintUpdateDocument.setDtdVersion("0");
         try {
             final ZoneId zoneId = ZoneId.of(properties.getProcess().timezone());
             DailyF310FileMapper.generateHeader(localDate, outputFileVersion, constraintUpdateDocument, zoneId);
-            DailyF310FileMapper.generateBody(constraintUpdateDocument, ivaResultsPerTask, zoneId);
+            DailyF310FileMapper.generateBody(constraintUpdateDocument, ivaResultsPerTask);
             final String outputFileName = getOutputFileName(localDate, outputFileVersion);
             final byte[] outputFileData = marshallMessageAndSetValidationTypeComment(constraintUpdateDocument);
             try (final InputStream inputStream = new ByteArrayInputStream(outputFileData)) {
@@ -126,7 +122,7 @@ public class PostProcessingService {
             final QName elementName = jaxbContext.createJAXBIntrospector().getElementName(constraintUpdateDocument);
             final JAXBElement<FlowBasedConstraintUpdateDocument> root = new JAXBElement<>(elementName, FlowBasedConstraintUpdateDocument.class, constraintUpdateDocument);
             jaxbMarshaller.marshal(root, stringWriter);
-            return stringWriter.toString().getBytes();
+            return stringWriter.toString().getBytes(StandardCharsets.UTF_8);
         } catch (final Exception e) {
             throw new CoreValidD2PostProcessingInternalException("Exception occurred during constraint update document export.", e);
         }
