@@ -55,6 +55,7 @@ import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.TreeMap;
 
 import static com.farao_community.farao.gridcapa_core_valid_day_ahead_conservative_post_processing.CoreValidD2PostProcessingConstants.DATE_TIME_FORMAT;
 import static com.farao_community.farao.gridcapa_core_valid_day_ahead_conservative_post_processing.CoreValidD2PostProcessingConstants.DOC_ID_PATTERN;
@@ -102,7 +103,7 @@ public final class DailyF310FileMapper {
         constraintUpdateDocument.setReceiverRole(receiverRole);
         generateCreationTime(constraintUpdateDocument);
         final TimeIntervalType constraintTimeInterval = new TimeIntervalType();
-        constraintTimeInterval.setV(getHeaderConstraintTimeInterval(localDate, zoneId));
+        constraintTimeInterval.setV(getHeaderTimeInterval(localDate, zoneId));
         constraintUpdateDocument.setConstraintTimeInterval(constraintTimeInterval);
         final AreaType domain = new AreaType();
         domain.setCodingScheme(CodingSchemeType.A_01);
@@ -116,7 +117,7 @@ public final class DailyF310FileMapper {
         final AdjustmentValuesType adjustmentValues = new AdjustmentValuesType();
         ivaResultsPerTask.forEach((task, ivaBranches) -> {
             if (ivaBranches != null && !ivaBranches.isEmpty()) {
-                final String taskDateTimeInterval = getOneHourConstraintTimeInterval(task.getTimestamp());
+                final String taskDateTimeInterval = getOneHourTimeInterval(task.getTimestamp());
                 final String justificationMessage = getJustificationMessage(task.getParameters());
                 ivaBranches.stream()
                         .filter(ivaBranchData -> ivaBranchData.getConservativeIva().compareTo(BigDecimal.ZERO) != 0)
@@ -211,17 +212,24 @@ public final class DailyF310FileMapper {
 
     private static void generateNetPositions(final Vertex worstVertex,
                                              final NetpositionsType netpositions) {
-        worstVertex.coordinates().forEach((hubCode, value) -> {
-            final NpType np = new NpType();
-            final HubType hub = new HubType();
-            hub.setName(hubCode);
-            np.setHub(hub);
-            np.setValue(value);
-            netpositions.getNp().add(np);
+        TreeMap<String, Integer> sortedCoordinates = new TreeMap<>(worstVertex.coordinates());
+        sortedCoordinates.forEach((hubCode, value) -> {
+            extractNetPostion(netpositions, hubCode, value);
         });
     }
 
-    private static String getOneHourConstraintTimeInterval(final OffsetDateTime dateTime) {
+    private static void extractNetPostion(final NetpositionsType netpositions,
+                                  final String hubCode,
+                                  final Integer value) {
+        final NpType np = new NpType();
+        final HubType hub = new HubType();
+        hub.setName(hubCode);
+        np.setHub(hub);
+        np.setValue(value);
+        netpositions.getNp().add(np);
+    }
+
+    private static String getOneHourTimeInterval(final OffsetDateTime dateTime) {
 
         final OffsetDateTime plusHourDateTime = dateTime.plus(Duration.ofHours(1));
         final ZonedDateTime startDateTime = dateTime.toZonedDateTime();
@@ -229,7 +237,7 @@ public final class DailyF310FileMapper {
         return getTimeInterval(startDateTime, endDateTime);
     }
 
-    private static String getHeaderConstraintTimeInterval(final LocalDate localDate, final ZoneId zoneId) {
+    private static String getHeaderTimeInterval(final LocalDate localDate, final ZoneId zoneId) {
         final LocalDateTime localDateTime = localDate.atTime(0, 0);
         final ZonedDateTime startTimestamp = getDateAtOffsetConvertedToUtc(localDateTime, zoneId);
         final ZonedDateTime endTimestamp = getDateAtOffsetConvertedToUtc(localDateTime.plusDays(1), zoneId);
