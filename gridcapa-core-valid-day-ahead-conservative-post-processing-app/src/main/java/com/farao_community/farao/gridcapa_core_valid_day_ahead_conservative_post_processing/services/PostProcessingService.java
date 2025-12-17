@@ -71,21 +71,20 @@ public class PostProcessingService {
             try (final InputStream inputStream = new ByteArrayInputStream(outputFileData)) {
                 minioAdapter.uploadOutput(CoreValidD2PostProcessingConstants.OUTPUTS_DIR + outputFileName, inputStream);
             }
-        } catch (IOException e) {
+        } catch (final IOException e) {
             throw new CoreValidD2PostProcessingInternalException("Could not generate flow based constraint update document file", e);
         }
     }
 
     private void fillMapOfOutputs(final Set<TaskDto> tasksToProcess,
-                                   final Map<TaskDto, List<IvaBranchData>> ivaResults) {
+                                  final Map<TaskDto, List<IvaBranchData>> ivaResults) {
         tasksToProcess.forEach(taskDto ->
                                        taskDto.getOutputs()
                                                .stream()
-                                               .filter(processFileDto -> processFileDto.getProcessFileStatus().equals(ProcessFileStatus.VALIDATED))
+                                               .filter(processFileDto -> processFileDto.getProcessFileStatus() == ProcessFileStatus.VALIDATED
+                                                                         && IVA_RESULT.equals(processFileDto.getFileType()))
                                                .forEach(processFileDto -> {
-                                                   if (IVA_RESULT.equals(processFileDto.getFileType())) {
-                                                       ivaResults.put(taskDto, getIvaResult(processFileDto));
-                                                   }
+                                                   ivaResults.put(taskDto, getIvaResult(processFileDto));
                                                })
         );
     }

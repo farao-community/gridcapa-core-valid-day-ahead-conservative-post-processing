@@ -57,11 +57,13 @@ public class CoreValidD2PostProcessingHandler {
     private void postProcessFinishedTasks(final TaskDto taskDtoUpdated) {
         try {
             if (taskDtoUpdated.getStatus().isOver()) {
-                final LocalDate localDate = taskDtoUpdated.getTimestamp().atZoneSameInstant(ZoneId.of(coreValidD2PostProcessingConfiguration.getProcess().timezone())).toLocalDate();
-                if (checkIfAllHourlyTasksAreFinished(localDate)) {
+                final ZoneId zoneId = ZoneId.of(coreValidD2PostProcessingConfiguration.getProcess().timezone());
+                final LocalDate localDate = taskDtoUpdated.getTimestamp().atZoneSameInstant(zoneId).toLocalDate();
+                if (areAllHourlyTasksFinished(localDate)) {
                     final Set<TaskDto> allTaskDtoForBusinessDate = getAllTaskDtoForBusinessDate(localDate);
                     // Only perform post processing if a task from local date was updated
-                    if (allTaskDtoForBusinessDate.stream().map(TaskDto::getId).anyMatch(uuid -> uuid.equals(taskDtoUpdated.getId()))) {
+                    final boolean anyMatch = allTaskDtoForBusinessDate.stream().map(TaskDto::getId).anyMatch(uuid -> uuid.equals(taskDtoUpdated.getId()));
+                    if (anyMatch) {
                         postProcessingService.processTasks(localDate, allTaskDtoForBusinessDate);
                     }
                 }
@@ -75,14 +77,12 @@ public class CoreValidD2PostProcessingHandler {
      * Gather all finished tasks associated to localDate by requesting TaskManager
      * A task is finished when TaskStats::isOver is true
      */
-    private boolean checkIfAllHourlyTasksAreFinished(final LocalDate localDate) {
-        final String requestUrl = getUrlToCheckAllTasksOfTheDayAreOver(localDate);
+    private boolean areAllHourlyTasksFinished(final LocalDate localDate) {
+        final String requestUrl = getUrlToCheckIfAllTasksOfTheDayAreOver(localDate);
         try {
             final ResponseEntity<Boolean> responseEntity = restTemplateBuilder.build().getForEntity(requestUrl, Boolean.class);
             final Boolean body = responseEntity.getBody();
-            if (body != null && responseEntity.getStatusCode() == HttpStatus.OK) {
-                return body;
-            }
+            return body != null && responseEntity.getStatusCode() == HttpStatus.OK && body;
         } catch (final Exception e) {
             LOGGER.error("Error while checking if all hourly tasks are finished.", e);
         }
@@ -108,7 +108,7 @@ public class CoreValidD2PostProcessingHandler {
         return Collections.emptySet();
     }
 
-    private String getUrlToCheckAllTasksOfTheDayAreOver(final LocalDate localDate) {
+    private String getUrlToCheckIfAllTasksOfTheDayAreOver(final LocalDate localDate) {
         return coreValidD2PostProcessingConfiguration.getUrl().taskManagerBusinessDateUrl() + localDate + "/allOver";
     }
 

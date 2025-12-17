@@ -42,6 +42,7 @@ import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeConstants;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
+import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -53,10 +54,16 @@ import java.time.format.DateTimeFormatter;
 import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+
+import static com.farao_community.farao.gridcapa_core_valid_day_ahead_conservative_post_processing.CoreValidD2PostProcessingConstants.DATE_TIME_FORMAT;
+import static com.farao_community.farao.gridcapa_core_valid_day_ahead_conservative_post_processing.CoreValidD2PostProcessingConstants.DOC_ID_PATTERN;
+import static com.farao_community.farao.gridcapa_core_valid_day_ahead_conservative_post_processing.CoreValidD2PostProcessingConstants.UTC_ZONE_ID;
+import static com.farao_community.farao.gridcapa_core_valid_day_ahead_conservative_post_processing.CoreValidD2PostProcessingConstants.XFR_RTE_Q_STRING_VALUE;
 
 public final class DailyF310FileMapper {
 
-    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern(CoreValidD2PostProcessingConstants.DATE_TIME_FORMAT);
+    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern(DATE_TIME_FORMAT);
 
     private DailyF310FileMapper() {
         throw new IllegalStateException("Utility class");
@@ -66,7 +73,7 @@ public final class DailyF310FileMapper {
                                       final int outputFileVersion,
                                       final FlowBasedConstraintUpdateDocument constraintUpdateDocument,
                                       final ZoneId zoneId) {
-        final String docId = String.format(CoreValidD2PostProcessingConstants.XFR_RTE_Q_STRING_VALUE + "-%s-F310-v%s", localDate.format(DateTimeFormatter.ofPattern("yyyyMMdd")), outputFileVersion);
+        final String docId = String.format(XFR_RTE_Q_STRING_VALUE + DOC_ID_PATTERN, localDate.format(DateTimeFormatter.ofPattern("yyyyMMdd")), outputFileVersion);
         final IdentificationType id = new IdentificationType();
         id.setV(docId);
         constraintUpdateDocument.setDocumentIdentification(id);
@@ -81,7 +88,7 @@ public final class DailyF310FileMapper {
         constraintUpdateDocument.setProcessType(processType);
         final PartyType sender = new PartyType();
         sender.setCodingScheme(CodingSchemeType.A_01);
-        sender.setV(CoreValidD2PostProcessingConstants.XFR_RTE_Q_STRING_VALUE);
+        sender.setV(XFR_RTE_Q_STRING_VALUE);
         constraintUpdateDocument.setSenderIdentification(sender);
         final RoleType senderRole = new RoleType();
         senderRole.setV(RoleTypeList.A_04);
@@ -111,9 +118,11 @@ public final class DailyF310FileMapper {
             if (ivaBranches != null && !ivaBranches.isEmpty()) {
                 final String taskDateTimeInterval = getOneHourConstraintTimeInterval(task.getTimestamp());
                 final String justificationMessage = getJustificationMessage(task.getParameters());
-                ivaBranches.forEach(ivaBranchData ->
-                    generateReturnedBranchesAndAdjustments(ivaBranchData, taskDateTimeInterval, returnedBranches, adjustmentValues, justificationMessage)
-                );
+                ivaBranches.stream()
+                        .filter(ivaBranchData -> ivaBranchData.getConservativeIva().compareTo(BigDecimal.ZERO) != 0)
+                        .forEach(ivaBranchData ->
+                                generateReturnedBranchesAndAdjustments(ivaBranchData, taskDateTimeInterval, returnedBranches, adjustmentValues, justificationMessage)
+                    );
             }
         });
         if (!returnedBranches.getReturnedBranch().isEmpty()) {
@@ -130,9 +139,7 @@ public final class DailyF310FileMapper {
                         taskParameterDto -> CoreValidD2PostProcessingConstants.STRING_TYPE.equalsIgnoreCase(taskParameterDto.getParameterType())
                                             && CoreValidD2PostProcessingConstants.JUSTIFICATION_MESSAGE_ID.equalsIgnoreCase(taskParameterDto.getId()))
                 .map(taskParameterDto ->
-                    taskParameterDto.getValue() != null
-                            ? taskParameterDto.getValue()
-                            : taskParameterDto.getDefaultValue()
+                             Optional.ofNullable(taskParameterDto.getValue()).orElse(taskParameterDto.getDefaultValue())
                 )
                 .findFirst()
                 .orElseThrow(() -> new CoreValidD2PostProcessingInvalidDataException("No justification message found"));
@@ -148,7 +155,7 @@ public final class DailyF310FileMapper {
         final String name = branch.neName() + " / " + branch.contingencyName();
         final ReturnedBranchType branchType = generateBranchType(branch, taskDateTimeInterval, name);
         returnedBranches.getReturnedBranch().add(branchType);
-        final AdjustmentValueType adjustmentValue = generateAdjustmentValue(ivaBranchData, taskDateTimeInterval, name, justificationMessage);
+        final AdjustmentValueType adjustmentValue = generateAdjustmentValue(name, ivaBranchData, taskDateTimeInterval, justificationMessage);
         adjustmentValues.getAdjustmentValue().add(adjustmentValue);
     }
 
@@ -166,9 +173,9 @@ public final class DailyF310FileMapper {
         return branchType;
     }
 
-    private static AdjustmentValueType generateAdjustmentValue(final IvaBranchData ivaBranchData,
+    private static AdjustmentValueType generateAdjustmentValue(final String name,
+                                                               final IvaBranchData ivaBranchData,
                                                                final String taskDateTimeInterval,
-                                                               final String name,
                                                                final String justificationMessage) {
         final AdjustmentValueType adjustmentValue = new AdjustmentValueType();
         adjustmentValue.setId(ivaBranchData.getCnec().necId());
@@ -182,11 +189,11 @@ public final class DailyF310FileMapper {
         final ReportingInformationType reportingInformation = new ReportingInformationType();
         final PartyType tso = new PartyType();
         tso.setCodingScheme(CodingSchemeType.A_01);
-        tso.setV(CoreValidD2PostProcessingConstants.XFR_RTE_Q_STRING_VALUE);
+        tso.setV(XFR_RTE_Q_STRING_VALUE);
         reportingInformation.setTso(tso);
         final CircumstanceType circumstance = new CircumstanceType();
         final NetpositionsType netpositions = new NetpositionsType();
-        generateNps(worstVertex, netpositions);
+        generateNetPositions(worstVertex, netpositions);
         circumstance.setNetpositions(netpositions);
         reportingInformation.setCircumstance(circumstance);
         reportingInformation.setFallback(false);
@@ -196,14 +203,14 @@ public final class DailyF310FileMapper {
 
     private static void generateCreationTime(final FlowBasedConstraintUpdateDocument constraintUpdateDocument) {
         final MessageDateTimeType creationDateTime = new MessageDateTimeType();
-        final ZonedDateTime now = ZonedDateTime.now(ZoneId.of(CoreValidD2PostProcessingConstants.UTC_ZONE_ID));
+        final ZonedDateTime now = ZonedDateTime.now(UTC_ZONE_ID);
         final XMLGregorianCalendar date = getXmlGregorianCalendar(now);
         creationDateTime.setV(date);
         constraintUpdateDocument.setCreationDateTime(creationDateTime);
     }
 
-    private static void generateNps(final Vertex worstVertex,
-                                    final NetpositionsType netpositions) {
+    private static void generateNetPositions(final Vertex worstVertex,
+                                             final NetpositionsType netpositions) {
         worstVertex.coordinates().forEach((hubCode, value) -> {
             final NpType np = new NpType();
             final HubType hub = new HubType();
@@ -235,7 +242,7 @@ public final class DailyF310FileMapper {
 
     private static ZonedDateTime getDateAtOffsetConvertedToUtc(final LocalDateTime localDateTime, final ZoneId zoneId) {
         final ZoneOffset zoneOffset = zoneId.getRules().getOffset(localDateTime);
-        return localDateTime.atOffset(zoneOffset).atZoneSameInstant(ZoneId.of(CoreValidD2PostProcessingConstants.UTC_ZONE_ID));
+        return localDateTime.atOffset(zoneOffset).atZoneSameInstant(UTC_ZONE_ID);
     }
 
     private static XMLGregorianCalendar getXmlGregorianCalendar(final ZonedDateTime zonedDateTime) {
