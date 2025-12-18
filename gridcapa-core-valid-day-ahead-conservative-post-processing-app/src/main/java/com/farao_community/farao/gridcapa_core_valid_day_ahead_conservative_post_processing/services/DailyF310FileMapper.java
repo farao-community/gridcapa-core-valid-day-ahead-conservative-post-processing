@@ -213,14 +213,12 @@ public final class DailyF310FileMapper {
     private static void generateNetPositions(final Vertex worstVertex,
                                              final NetpositionsType netpositions) {
         TreeMap<String, Integer> sortedCoordinates = new TreeMap<>(worstVertex.coordinates());
-        sortedCoordinates.forEach((hubCode, value) -> {
-            extractNetPostion(netpositions, hubCode, value);
-        });
+        sortedCoordinates.forEach((hubCode, value) -> extractNetPosition(netpositions, hubCode, value));
     }
 
-    private static void extractNetPostion(final NetpositionsType netpositions,
-                                  final String hubCode,
-                                  final Integer value) {
+    private static void extractNetPosition(final NetpositionsType netpositions,
+                                           final String hubCode,
+                                           final Integer value) {
         final NpType np = new NpType();
         final HubType hub = new HubType();
         hub.setName(hubCode);
