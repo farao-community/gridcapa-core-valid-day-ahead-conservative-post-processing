@@ -47,7 +47,7 @@
 
     <properties>
         <gridcapa-core-valid-day-ahead-conservative.version>0.2.5-beta</gridcapa-core-valid-day-ahead-conservative.version>
-        <task-manager.version>1.37.0</task-manager.version>
+        <task-manager.version>1.38.0</task-manager.version>
         <gridcapa.starter.minio.adapter.version>1.7.0</gridcapa.starter.minio.adapter.version>
         <farao.dependencies.version>1.44.1</farao.dependencies.version>
         <jsonapi.converter.version>0.11</jsonapi.converter.version>
