@@ -49,10 +49,10 @@ jobs:
       - name: Commit and tag release version
         uses: stefanzweifel/git-auto-commit-action@master
         with:
-          branch: release-v$RELEASE_VERSION
+          branch: release-v${{ env.RELEASE_VERSION }}
           create_branch: true
-          commit_message: Prepare release $RELEASE_VERSION
-          tagging_message: v$RELEASE_VERSION
+          commit_message: Prepare release ${{ env.RELEASE_VERSION }}
+          tagging_message: v${{ env.RELEASE_VERSION }}
         env:
           RELEASE_VERSION: ${{ github.event.inputs.releaseVersion }}
       - name: Release Maven package
@@ -82,9 +82,9 @@ jobs:
       - name: Commit next version
         uses: stefanzweifel/git-auto-commit-action@master
         with:
-          branch: next-release-v$NEXT_VERSION
+          branch: next-release-v${{ env.NEXT_VERSION }}
           create_branch: true
-          commit_message: Prepare next release $NEXT_VERSION
+          commit_message: Prepare next release ${{ env.NEXT_VERSION }}
           skip_fetch: true
           skip_checkout: true
         env:
@@ -94,9 +94,9 @@ jobs:
         uses: devmasx/merge-branch@master
         with:
           type: now
-          from_branch: next-release-v$NEXT_VERSION
+          from_branch: next-release-v${{ env.NEXT_VERSION }}
           target_branch: ${{ github.ref_name }}
-          message: Automatic merge after release $RELEASE_VERSION
+          message: Automatic merge after release ${{ env.RELEASE_VERSION }}
           github_token: ${{ secrets.REPO_ACCESS_TOKEN }}
         env:
           NEXT_VERSION: ${{ github.event.inputs.nextVersion }}
@@ -106,6 +106,6 @@ jobs:
         uses: dawidd6/action-delete-branch@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          branches: next-release-v$NEXT_VERSION
+          branches: next-release-v${{ env.NEXT_VERSION }}
         env:
           NEXT_VERSION: ${{ github.event.inputs.nextVersion }}
