@@ -9,26 +9,5 @@ package com.farao_community.farao.gridcapa_core_valid_day_ahead_conservative_pos
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @ConfigurationProperties("core-valid-d2-post-processing")
-public class CoreValidD2PostProcessingConfiguration {
-    private final UrlProperties url;
-    private final ProcessProperties process;
-
-    public CoreValidD2PostProcessingConfiguration(final UrlProperties url, final ProcessProperties process) {
-        this.url = url;
-        this.process = process;
-    }
-
-    public UrlProperties getUrl() {
-        return url;
-    }
-
-    public ProcessProperties getProcess() {
-        return process;
-    }
-
-    public record UrlProperties(String taskManagerTimestampUrl, String taskManagerBusinessDateUrl) {
-    }
-
-    public record ProcessProperties(String tag, String timezone) {
-    }
+public record CoreValidD2PostProcessingConfiguration(UrlProperties url, ProcessProperties process) {
 }

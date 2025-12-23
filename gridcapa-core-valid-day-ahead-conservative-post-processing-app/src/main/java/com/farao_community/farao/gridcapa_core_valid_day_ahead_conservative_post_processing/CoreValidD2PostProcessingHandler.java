@@ -57,7 +57,7 @@ public class CoreValidD2PostProcessingHandler {
     private void postProcessFinishedTasks(final TaskDto taskDtoUpdated) {
         try {
             if (taskDtoUpdated.getStatus().isOver()) {
-                final ZoneId zoneId = ZoneId.of(coreValidD2PostProcessingConfiguration.getProcess().timezone());
+                final ZoneId zoneId = ZoneId.of(coreValidD2PostProcessingConfiguration.process().timezone());
                 final LocalDate localDate = taskDtoUpdated.getTimestamp().atZoneSameInstant(zoneId).toLocalDate();
                 if (areAllHourlyTasksFinished(localDate)) {
                     final Set<TaskDto> allTaskDtoForBusinessDate = getAllTaskDtoForBusinessDate(localDate);
@@ -109,10 +109,10 @@ public class CoreValidD2PostProcessingHandler {
     }
 
     private String getUrlToCheckIfAllTasksOfTheDayAreOver(final LocalDate localDate) {
-        return coreValidD2PostProcessingConfiguration.getUrl().taskManagerBusinessDateUrl() + localDate + "/allOver";
+        return coreValidD2PostProcessingConfiguration.url().taskManagerBusinessDateUrl() + localDate + "/allOver";
     }
 
     private String getUrlToGetAllTasksOfTheDay(final LocalDate localDate) {
-        return coreValidD2PostProcessingConfiguration.getUrl().taskManagerBusinessDateUrl() + localDate;
+        return coreValidD2PostProcessingConfiguration.url().taskManagerBusinessDateUrl() + localDate;
     }
 }

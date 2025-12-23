@@ -66,7 +66,7 @@ public class PostProcessingService {
         constraintUpdateDocument.setDtdRelease("4");
         constraintUpdateDocument.setDtdVersion("0");
         try {
-            final ZoneId zoneId = ZoneId.of(properties.getProcess().timezone());
+            final ZoneId zoneId = ZoneId.of(properties.process().timezone());
             DailyF310FileMapper.generateHeader(localDate, outputFileVersion, constraintUpdateDocument, zoneId);
             DailyF310FileMapper.generateBody(constraintUpdateDocument, ivaResultsPerTask);
             final String outputFileName = getOutputFileName(localDate, outputFileVersion);

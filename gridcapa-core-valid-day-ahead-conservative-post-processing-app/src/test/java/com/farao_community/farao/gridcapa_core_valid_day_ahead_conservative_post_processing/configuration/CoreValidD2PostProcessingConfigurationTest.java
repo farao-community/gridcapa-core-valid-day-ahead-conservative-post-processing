@@ -21,11 +21,11 @@ class CoreValidD2PostProcessingConfigurationTest {
     void testConfiguration() {
         Assertions.assertThat(coreValidD2PostProcessingConfiguration)
                 .isNotNull();
-        Assertions.assertThat(coreValidD2PostProcessingConfiguration.getUrl())
+        Assertions.assertThat(coreValidD2PostProcessingConfiguration.url())
                 .isNotNull()
                 .hasFieldOrPropertyWithValue("taskManagerTimestampUrl", "http://test-dummy/tasks/")
                 .hasFieldOrPropertyWithValue("taskManagerBusinessDateUrl", "http://test-dummy/tasks/businessdate/");
-        Assertions.assertThat(coreValidD2PostProcessingConfiguration.getProcess())
+        Assertions.assertThat(coreValidD2PostProcessingConfiguration.process())
                 .isNotNull()
                 .hasFieldOrPropertyWithValue("tag", "CORE_VALID_D2")
                 .hasFieldOrPropertyWithValue("timezone", "CET");
