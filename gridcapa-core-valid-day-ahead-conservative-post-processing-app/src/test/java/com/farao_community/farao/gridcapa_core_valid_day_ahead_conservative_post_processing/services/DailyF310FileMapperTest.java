@@ -16,7 +16,6 @@ import com.farao_community.farao.gridcapa_core_valid_day_ahead_conservative.api.
 import com.farao_community.farao.gridcapa_core_valid_day_ahead_conservative_post_processing.CoreValidD2PostProcessingConstants;
 import com.farao_community.farao.gridcapa_core_valid_day_ahead_conservative_post_processing.fbconstraint.xsd.AdjustmentValueType;
 import com.farao_community.farao.gridcapa_core_valid_day_ahead_conservative_post_processing.fbconstraint.xsd.FlowBasedConstraintUpdateDocument;
-import com.farao_community.farao.gridcapa_core_valid_day_ahead_conservative_post_processing.fbconstraint.xsd.ReturnedBranchType;
 import com.farao_community.farao.gridcapa_core_valid_day_ahead_conservative_post_processing.fbconstraint.xsd.etso.CodingSchemeType;
 import com.farao_community.farao.gridcapa_core_valid_day_ahead_conservative_post_processing.fbconstraint.xsd.etso.MessageTypeList;
 import com.farao_community.farao.gridcapa_core_valid_day_ahead_conservative_post_processing.fbconstraint.xsd.etso.ProcessTypeList;
@@ -89,19 +88,7 @@ class DailyF310FileMapperTest {
     void generateBody() {
         final FlowBasedConstraintUpdateDocument document = new FlowBasedConstraintUpdateDocument();
         DailyF310FileMapper.generateBody(document, getTestMap());
-        Assertions.assertThat(document.getReturnedBranches()).isNotNull();
-        Assertions.assertThat(document.getReturnedBranches().getReturnedBranch())
-                .isNotEmpty()
-                .hasSize(6)
-                .first()
-                .isNotNull();
-        final ReturnedBranchType firstBranch = document.getReturnedBranches().getReturnedBranch().getFirst();
-        Assertions.assertThat(firstBranch.getTimeInterval())
-                .hasFieldOrPropertyWithValue("v", "2025-11-28T12:00Z/2025-11-28T13:00Z");
-        Assertions.assertThat(firstBranch.isCNEC()).isTrue();
-        Assertions.assertThat(firstBranch.getId()).isEqualTo("testId");
-        Assertions.assertThat(firstBranch.getReceiverCategory()).isNull();
-        Assertions.assertThat(firstBranch.getName()).isEqualTo("testName / testContingency");
+        Assertions.assertThat(document.getReturnedBranches()).isNull();
 
         Assertions.assertThat(document.getAdjustmentValues()).isNotNull();
         Assertions.assertThat(document.getAdjustmentValues().getAdjustmentValue())

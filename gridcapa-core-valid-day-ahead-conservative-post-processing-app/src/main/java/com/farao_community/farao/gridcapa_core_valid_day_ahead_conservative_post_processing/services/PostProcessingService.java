@@ -38,7 +38,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
+import static com.farao_community.farao.gridcapa_core_valid_day_ahead_conservative_post_processing.CoreValidD2PostProcessingConstants.DOMAIN_END_HEADER;
 import static com.farao_community.farao.gridcapa_core_valid_day_ahead_conservative_post_processing.CoreValidD2PostProcessingConstants.IVA_RESULT;
+import static com.farao_community.farao.gridcapa_core_valid_day_ahead_conservative_post_processing.CoreValidD2PostProcessingConstants.NO_ADJUSTMENT_COMMENT;
+import static com.farao_community.farao.gridcapa_core_valid_day_ahead_conservative_post_processing.CoreValidD2PostProcessingConstants.NO_BRANCH_COMMENT;
 import static com.farao_community.farao.gridcapa_core_valid_day_ahead_conservative_post_processing.CoreValidD2PostProcessingConstants.VALIDATION_TYPE_COMMENT;
 import static com.farao_community.farao.gridcapa_core_valid_day_ahead_conservative_post_processing.CoreValidD2PostProcessingConstants.XSD_FILE_NAME;
 
@@ -83,9 +86,7 @@ public class PostProcessingService {
                                                .stream()
                                                .filter(processFileDto -> processFileDto.getProcessFileStatus() == ProcessFileStatus.VALIDATED
                                                                          && IVA_RESULT.equals(processFileDto.getFileType()))
-                                               .forEach(processFileDto -> {
-                                                   ivaResults.put(taskDto, getIvaResult(processFileDto));
-                                               })
+                                               .forEach(processFileDto -> ivaResults.put(taskDto, getIvaResult(processFileDto)))
         );
     }
 
@@ -117,11 +118,16 @@ public class PostProcessingService {
             final Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
             jaxbMarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
             jaxbMarshaller.setProperty(Marshaller.JAXB_NO_NAMESPACE_SCHEMA_LOCATION, XSD_FILE_NAME);
-            jaxbMarshaller.setProperty("org.glassfish.jaxb.xmlHeaders", VALIDATION_TYPE_COMMENT + "\n");
             final QName elementName = jaxbContext.createJAXBIntrospector().getElementName(constraintUpdateDocument);
+            final boolean hasAdjustmentValues =  constraintUpdateDocument.getAdjustmentValues() != null;
             final JAXBElement<FlowBasedConstraintUpdateDocument> root = new JAXBElement<>(elementName, FlowBasedConstraintUpdateDocument.class, constraintUpdateDocument);
             jaxbMarshaller.marshal(root, stringWriter);
-            return stringWriter.toString().getBytes(StandardCharsets.UTF_8);
+            final String fileXmlString = stringWriter.toString();
+            final String commentedXML = fileXmlString.replace(DOMAIN_END_HEADER, DOMAIN_END_HEADER
+                                                                                 + VALIDATION_TYPE_COMMENT
+                                                                                 + NO_BRANCH_COMMENT
+                                                                                 + (hasAdjustmentValues ? "" : NO_ADJUSTMENT_COMMENT));
+            return commentedXML.getBytes(StandardCharsets.UTF_8);
         } catch (final Exception e) {
             throw new CoreValidD2PostProcessingInternalException("Exception occurred during constraint update document export.", e);
         }

@@ -22,8 +22,6 @@ import com.farao_community.farao.gridcapa_core_valid_day_ahead_conservative_post
 import com.farao_community.farao.gridcapa_core_valid_day_ahead_conservative_post_processing.fbconstraint.xsd.NetpositionsType;
 import com.farao_community.farao.gridcapa_core_valid_day_ahead_conservative_post_processing.fbconstraint.xsd.NpType;
 import com.farao_community.farao.gridcapa_core_valid_day_ahead_conservative_post_processing.fbconstraint.xsd.ReportingInformationType;
-import com.farao_community.farao.gridcapa_core_valid_day_ahead_conservative_post_processing.fbconstraint.xsd.ReturnedBranchType;
-import com.farao_community.farao.gridcapa_core_valid_day_ahead_conservative_post_processing.fbconstraint.xsd.ReturnedBranchesType;
 import com.farao_community.farao.gridcapa_core_valid_day_ahead_conservative_post_processing.fbconstraint.xsd.etso.AreaType;
 import com.farao_community.farao.gridcapa_core_valid_day_ahead_conservative_post_processing.fbconstraint.xsd.etso.CodingSchemeType;
 import com.farao_community.farao.gridcapa_core_valid_day_ahead_conservative_post_processing.fbconstraint.xsd.etso.IdentificationType;
@@ -51,6 +49,7 @@ import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Comparator;
 import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Map;
@@ -113,22 +112,20 @@ public final class DailyF310FileMapper {
 
     public static void generateBody(final FlowBasedConstraintUpdateDocument constraintUpdateDocument,
                                     final Map<TaskDto, List<IvaBranchData>> ivaResultsPerTask) {
-        final ReturnedBranchesType returnedBranches = new ReturnedBranchesType();
         final AdjustmentValuesType adjustmentValues = new AdjustmentValuesType();
         ivaResultsPerTask.forEach((task, ivaBranches) -> {
             if (ivaBranches != null && !ivaBranches.isEmpty()) {
                 final String taskDateTimeInterval = getOneHourTimeInterval(task.getTimestamp());
                 final String justificationMessage = getJustificationMessage(task.getParameters());
+                final Comparator<IvaBranchData> ivaBranchDataComparator = (iv1, iv2) -> iv2.getCnec().necId().compareToIgnoreCase(iv1.getCnec().necId());
                 ivaBranches.stream()
                         .filter(ivaBranchData -> ivaBranchData.getConservativeIva().compareTo(BigDecimal.ZERO) != 0)
+                        .sorted(ivaBranchDataComparator)
                         .forEach(ivaBranchData ->
-                                generateReturnedBranchesAndAdjustments(ivaBranchData, taskDateTimeInterval, returnedBranches, adjustmentValues, justificationMessage)
+                                generateReturnedAdjustments(ivaBranchData, taskDateTimeInterval, adjustmentValues, justificationMessage)
                     );
             }
         });
-        if (!returnedBranches.getReturnedBranch().isEmpty()) {
-            constraintUpdateDocument.setReturnedBranches(returnedBranches);
-        }
         if (!adjustmentValues.getAdjustmentValue().isEmpty()) {
             constraintUpdateDocument.setAdjustmentValues(adjustmentValues);
         }
@@ -147,31 +144,14 @@ public final class DailyF310FileMapper {
 
     }
 
-    private static void generateReturnedBranchesAndAdjustments(final IvaBranchData ivaBranchData,
-                                                               final String taskDateTimeInterval,
-                                                               final ReturnedBranchesType returnedBranches,
-                                                               final AdjustmentValuesType adjustmentValues,
-                                                               final String justificationMessage) {
+    private static void generateReturnedAdjustments(final IvaBranchData ivaBranchData,
+                                                    final String taskDateTimeInterval,
+                                                    final AdjustmentValuesType adjustmentValues,
+                                                    final String justificationMessage) {
         final CnecRamData branch = ivaBranchData.getCnec();
         final String name = branch.neName() + " / " + branch.contingencyName();
-        final ReturnedBranchType branchType = generateBranchType(branch, taskDateTimeInterval, name);
-        returnedBranches.getReturnedBranch().add(branchType);
         final AdjustmentValueType adjustmentValue = generateAdjustmentValue(name, ivaBranchData, taskDateTimeInterval, justificationMessage);
         adjustmentValues.getAdjustmentValue().add(adjustmentValue);
-    }
-
-    private static ReturnedBranchType generateBranchType(final CnecRamData branch,
-                                                         final String taskDateTimeInterval,
-                                                         final String name) {
-        final ReturnedBranchType branchType = new ReturnedBranchType();
-        branchType.setId(branch.necId());
-        branchType.setName(name);
-        final TimeIntervalType branchTimeInterval = new TimeIntervalType();
-        branchTimeInterval.setV(taskDateTimeInterval);
-        branchType.setTimeInterval(branchTimeInterval);
-        branchType.setCNEC(true);
-        // TODO branchType.setJustification(branch.);
-        return branchType;
     }
 
     private static AdjustmentValueType generateAdjustmentValue(final String name,
