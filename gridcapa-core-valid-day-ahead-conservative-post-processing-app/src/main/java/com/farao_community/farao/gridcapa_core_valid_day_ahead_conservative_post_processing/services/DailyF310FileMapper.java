@@ -131,6 +131,7 @@ public final class DailyF310FileMapper {
         final AdjustmentValuesType adjustmentValues = new AdjustmentValuesType();
         ivaResultsPerTask.forEach((task, ivaBranches) -> {
             if (ivaBranches != null && !ivaBranches.isEmpty()) {
+
                 final Comparator<IvaBranchData> byNecId = (iv1, iv2)
                     -> iv2.getCnec().necId().compareToIgnoreCase(iv1.getCnec().necId());
 
@@ -188,13 +189,11 @@ public final class DailyF310FileMapper {
         adjustmentValue.setTimeInterval(branchTimeInterval);
         adjustmentValue.setIVA(ivaBranchData.getConservativeIva().floatValue());
 
+        final Vertex worstVertex = ivaBranchData.getWorstVertices().getFirst().vertex();
+
         adjustmentValue.setJustification(justificationMessage
                                          + " vertex "
-                                         + ivaBranchData
-                                             .getWorstVertices()
-                                             .getFirst()
-                                             .vertex()
-                                             .vertexId());
+                                         + worstVertex.vertexId());
 
         final ReportingInformationType reportingInformation = new ReportingInformationType();
         final PartyType tso = new PartyType();
@@ -204,7 +203,7 @@ public final class DailyF310FileMapper {
 
         final CircumstanceType circumstance = new CircumstanceType();
         final NetpositionsType netPositions = new NetpositionsType();
-        final Vertex worstVertex = ivaBranchData.getWorstVertices().getFirst().vertex();
+
         generateNetPositions(worstVertex, netPositions);
         circumstance.setNetpositions(netPositions);
         reportingInformation.setCircumstance(circumstance);
