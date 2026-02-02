@@ -7,6 +7,7 @@
 package com.farao_community.farao.gridcapa_core_valid_day_ahead_conservative_post_processing;
 
 import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 
 public final class CoreValidD2PostProcessingConstants {
 
@@ -26,6 +27,7 @@ public final class CoreValidD2PostProcessingConstants {
     public static final String DATE_TIME_FORMAT = "yyyy-MM-dd'T'HH:mmX";
     public static final String IVA_RESULT = "IVA-RESULT";
     public static final String DOC_ID_PATTERN = "-%s-F310-v%s";
+    public static final DateTimeFormatter YYYYMMDD_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd");
 
     private CoreValidD2PostProcessingConstants() {
         throw new IllegalStateException("Constants class");
