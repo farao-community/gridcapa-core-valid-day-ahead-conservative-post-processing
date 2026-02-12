@@ -18,6 +18,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.JAXBElement;
+import jakarta.xml.bind.JAXBException;
 import jakarta.xml.bind.Marshaller;
 import org.springframework.stereotype.Service;
 
@@ -53,6 +54,7 @@ import static java.util.Comparator.comparing;
 @Service
 public class PostProcessingService {
 
+    private static final JAXBContext JAXB_CONTEXT = initJaxbContext();
     private static final String RELEASE = "4";
     private static final String VERSION = "0";
 
@@ -127,12 +129,11 @@ public class PostProcessingService {
     private byte[] marshallMessageAndSetValidationTypeComment(final FlowBasedConstraintUpdateDocument constraintUpdateDocument) {
         try {
             final StringWriter stringWriter = new StringWriter();
-            final JAXBContext jaxbContext = JAXBContext.newInstance(FlowBasedConstraintUpdateDocument.class);
-            final Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
+            final Marshaller jaxbMarshaller = JAXB_CONTEXT.createMarshaller();
             jaxbMarshaller.setProperty(JAXB_FORMATTED_OUTPUT, true);
             jaxbMarshaller.setProperty(JAXB_NO_NAMESPACE_SCHEMA_LOCATION, XSD_FILE_NAME);
 
-            final QName elementName = jaxbContext
+            final QName elementName = JAXB_CONTEXT
                 .createJAXBIntrospector()
                 .getElementName(constraintUpdateDocument);
 
@@ -149,6 +150,14 @@ public class PostProcessingService {
             return commentedXML.getBytes(UTF_8);
         } catch (final Exception e) {
             throw new CoreValidD2PostProcessingInternalException("Exception occurred during constraint update document export.", e);
+        }
+    }
+
+    private static JAXBContext initJaxbContext() {
+        try {
+            return JAXBContext.newInstance(FlowBasedConstraintUpdateDocument.class);
+        } catch (JAXBException e) {
+            throw new ExceptionInInitializerError(e);
         }
     }
 }
