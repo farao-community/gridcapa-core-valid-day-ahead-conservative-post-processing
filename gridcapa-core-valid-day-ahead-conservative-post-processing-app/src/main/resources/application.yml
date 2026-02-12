@@ -5,7 +5,7 @@ spring:
     function:
       definition: consumeTaskDtoUpdate
 
-core-Valid-d2-post-processing:
+core-valid-d2-post-processing:
   process:
     tag: CORE_VALID_D2
     timezone: CET

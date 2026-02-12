@@ -50,7 +50,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.TreeMap;
 
-import static com.farao_community.farao.gridcapa_core_valid_day_ahead_conservative_post_processing.CoreValidD2PostProcessingConstants.DATE_TIME_FORMAT;
+import static com.farao_community.farao.gridcapa_core_valid_day_ahead_conservative_post_processing.CoreValidD2PostProcessingConstants.OUTPUT_XML_DATE_TIME_FORMAT;
 import static com.farao_community.farao.gridcapa_core_valid_day_ahead_conservative_post_processing.CoreValidD2PostProcessingConstants.DOC_ID_PATTERN;
 import static com.farao_community.farao.gridcapa_core_valid_day_ahead_conservative_post_processing.CoreValidD2PostProcessingConstants.JUSTIFICATION_MESSAGE_ID;
 import static com.farao_community.farao.gridcapa_core_valid_day_ahead_conservative_post_processing.CoreValidD2PostProcessingConstants.STRING_TYPE;
@@ -68,7 +68,9 @@ import static javax.xml.datatype.DatatypeConstants.FIELD_UNDEFINED;
 
 public final class DailyF310FileMapper {
 
-    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern(DATE_TIME_FORMAT);
+    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern(OUTPUT_XML_DATE_TIME_FORMAT);
+    private static final Comparator<IvaBranchData> BY_NEC_ID_COMPARATOR = (iv1, iv2)
+            -> iv2.getCnec().necId().compareToIgnoreCase(iv1.getCnec().necId());
 
     private DailyF310FileMapper() {
         throw new IllegalStateException("Utility class");
@@ -131,20 +133,15 @@ public final class DailyF310FileMapper {
         final AdjustmentValuesType adjustmentValues = new AdjustmentValuesType();
         ivaResultsPerTask.forEach((task, ivaBranches) -> {
             if (ivaBranches != null && !ivaBranches.isEmpty()) {
-
-                final Comparator<IvaBranchData> byNecId = (iv1, iv2)
-                    -> iv2.getCnec().necId().compareToIgnoreCase(iv1.getCnec().necId());
-
                 ivaBranches.stream()
                     .filter(iv -> ZERO.compareTo(iv.getConservativeIva()) != 0)
-                    .sorted(byNecId)
+                    .sorted(BY_NEC_ID_COMPARATOR)
                     .forEach(ivaBranchData -> generateReturnedAdjustments(ivaBranchData,
                                                                           getOneHourTimeInterval(task.getTimestamp()),
                                                                           adjustmentValues,
                                                                           getJustificationMessage(task.getParameters())));
             }
         });
-
         if (!adjustmentValues.getAdjustmentValue().isEmpty()) {
             fbCtUpdateDoc.setAdjustmentValues(adjustmentValues);
         }

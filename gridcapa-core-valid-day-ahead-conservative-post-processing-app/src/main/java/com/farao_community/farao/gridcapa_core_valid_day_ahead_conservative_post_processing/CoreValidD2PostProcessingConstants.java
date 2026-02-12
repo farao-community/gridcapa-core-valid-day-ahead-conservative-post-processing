@@ -24,7 +24,7 @@ public final class CoreValidD2PostProcessingConstants {
     public static final String NO_BRANCH_COMMENT = "\t<!--no ReturnedBranch-->\n";
     public static final String NO_ADJUSTMENT_COMMENT = "\t<!--no AdjustmentValue-->\n";
     public static final String DOMAIN_END_HEADER = "<Domain v=\"10YFR-RTE------C\" codingScheme=\"A01\"/>\n";
-    public static final String DATE_TIME_FORMAT = "yyyy-MM-dd'T'HH:mmX";
+    public static final String OUTPUT_XML_DATE_TIME_FORMAT = "yyyy-MM-dd'T'HH:mmX";
     public static final String IVA_RESULT = "IVA-RESULT";
     public static final String DOC_ID_PATTERN = "-%s-F310-v%s";
     public static final DateTimeFormatter YYYYMMDD_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd");
