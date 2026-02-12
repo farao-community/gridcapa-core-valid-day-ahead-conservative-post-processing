@@ -71,12 +71,12 @@ jobs:
           name: farao/gridcapa-core-valid-day-ahead-conservative-post-processing
           username: farao
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-          tags: v$TAG
+          tags: v${{ env.TAG }}
         env:
           TAG: ${{ github.event.inputs.releaseVersion }}
 
       - name: Change Maven version to next version
-        run: mvn --batch-mode versions:set -DgenerateBackupPoms=false -DnewVersion=$NEXT_VERSION-SNAPSHOT
+        run: mvn --batch-mode versions:set -DgenerateBackupPoms=false -DnewVersion=${{ env.NEXT_VERSION }}-SNAPSHOT
         env:
           NEXT_VERSION: ${{ github.event.inputs.nextVersion }}
       - name: Commit next version
