@@ -41,6 +41,8 @@ import static com.farao_community.farao.gridcapa_core_valid_day_ahead_conservati
 import static com.farao_community.farao.gridcapa_core_valid_day_ahead_conservative_post_processing.CoreValidD2PostProcessingConstants.NO_ADJUSTMENT_COMMENT;
 import static com.farao_community.farao.gridcapa_core_valid_day_ahead_conservative_post_processing.CoreValidD2PostProcessingConstants.NO_BRANCH_COMMENT;
 import static com.farao_community.farao.gridcapa_core_valid_day_ahead_conservative_post_processing.CoreValidD2PostProcessingConstants.OUTPUTS_DIR;
+import static com.farao_community.farao.gridcapa_core_valid_day_ahead_conservative_post_processing.CoreValidD2PostProcessingConstants.OUTPUT_XML_RELEASE;
+import static com.farao_community.farao.gridcapa_core_valid_day_ahead_conservative_post_processing.CoreValidD2PostProcessingConstants.OUTPUT_XML_VERSION;
 import static com.farao_community.farao.gridcapa_core_valid_day_ahead_conservative_post_processing.CoreValidD2PostProcessingConstants.VALIDATION_TYPE_COMMENT;
 import static com.farao_community.farao.gridcapa_core_valid_day_ahead_conservative_post_processing.CoreValidD2PostProcessingConstants.XSD_FILE_NAME;
 import static com.farao_community.farao.gridcapa_core_valid_day_ahead_conservative_post_processing.CoreValidD2PostProcessingConstants.YYYYMMDD_FORMATTER;
@@ -55,8 +57,6 @@ import static java.util.Comparator.comparing;
 public class PostProcessingService {
 
     private static final JAXBContext JAXB_CONTEXT = initJaxbContext();
-    private static final String RELEASE = "4";
-    private static final String VERSION = "0";
 
     private final MinioAdapter minioAdapter;
     private final CoreValidD2PostProcessingConfiguration properties;
@@ -74,8 +74,8 @@ public class PostProcessingService {
         fillMapOfOutputs(tasksToPostProcess, ivaResultsPerTask);
 
         final FlowBasedConstraintUpdateDocument fbCtUpdateDoc = new FlowBasedConstraintUpdateDocument();
-        fbCtUpdateDoc.setDtdRelease(RELEASE);
-        fbCtUpdateDoc.setDtdVersion(VERSION);
+        fbCtUpdateDoc.setDtdRelease(OUTPUT_XML_RELEASE);
+        fbCtUpdateDoc.setDtdVersion(OUTPUT_XML_VERSION);
 
         try {
             final ZoneId zoneId = ZoneId.of(properties.process().timezone());
