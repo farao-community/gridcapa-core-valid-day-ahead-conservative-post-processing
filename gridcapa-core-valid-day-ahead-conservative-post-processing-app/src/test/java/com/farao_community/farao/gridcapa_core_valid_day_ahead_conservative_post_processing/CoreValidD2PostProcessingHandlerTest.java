@@ -6,12 +6,7 @@
  */
 package com.farao_community.farao.gridcapa_core_valid_day_ahead_conservative_post_processing;
 
-import com.farao_community.farao.gridcapa.task_manager.api.ProcessFileDto;
-import com.farao_community.farao.gridcapa.task_manager.api.ProcessFileStatus;
-import com.farao_community.farao.gridcapa.task_manager.api.ProcessRunDto;
 import com.farao_community.farao.gridcapa.task_manager.api.TaskDto;
-import com.farao_community.farao.gridcapa.task_manager.api.TaskParameterDto;
-import com.farao_community.farao.gridcapa.task_manager.api.TaskStatus;
 import com.farao_community.farao.gridcapa_core_valid_day_ahead_conservative_post_processing.services.PostProcessingService;
 import com.farao_community.farao.minio_adapter.starter.MinioAdapter;
 import org.junit.jupiter.api.Test;
@@ -26,10 +21,6 @@ import org.springframework.web.client.RestTemplate;
 import reactor.core.publisher.Flux;
 
 import java.time.LocalDate;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
-import java.util.List;
-import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
@@ -51,7 +42,7 @@ class CoreValidD2PostProcessingHandlerTest {
     @Test
     void consumeTaskDtoUpdateOK() {
         Mockito.reset(postProcessingService);
-        final TaskDto taskDto = getTestTaskDto(true);
+        final TaskDto taskDto = CoreValidD2ConservativeTestUtils.getTestTaskDto(true);
         final TaskDto[] tasks = {taskDto};
         final Flux<TaskDto> taskDtoFlux = Flux.fromStream(Stream.of(taskDto));
         final Consumer<Flux<TaskDto>> consumer = coreValidD2PostProcessingHandler.consumeTaskDtoUpdate();
@@ -72,7 +63,7 @@ class CoreValidD2PostProcessingHandlerTest {
     @Test
     void consumeTaskDtoUpdateNotAllFinished() {
         Mockito.reset(postProcessingService);
-        final TaskDto taskDto = getTestTaskDto(true);
+        final TaskDto taskDto = CoreValidD2ConservativeTestUtils.getTestTaskDto(true);
         final Flux<TaskDto> taskDtoFlux = Flux.fromStream(Stream.of(taskDto));
         final Consumer<Flux<TaskDto>> consumer = coreValidD2PostProcessingHandler.consumeTaskDtoUpdate();
         final RestTemplate restTemplate = Mockito.mock(RestTemplate.class);
@@ -87,27 +78,10 @@ class CoreValidD2PostProcessingHandlerTest {
     @Test
     void consumeTaskDtoUpdateNotFinished() {
         Mockito.reset(postProcessingService);
-        final TaskDto taskDto = getTestTaskDto(false);
+        final TaskDto taskDto = CoreValidD2ConservativeTestUtils.getTestTaskDto(false);
         final Flux<TaskDto> taskDtoFlux = Flux.fromStream(Stream.of(taskDto));
         final Consumer<Flux<TaskDto>> consumer = coreValidD2PostProcessingHandler.consumeTaskDtoUpdate();
         consumer.accept(taskDtoFlux);
         Mockito.verify(postProcessingService, Mockito.never()).processTasks(Mockito.any(LocalDate.class), Mockito.any());
-    }
-
-    private static TaskDto getTestTaskDto(final boolean isOver) {
-        final OffsetDateTime timestamp = OffsetDateTime.of(2025, 11, 28, 12, 0, 0, 0, ZoneOffset.UTC);
-        return new TaskDto(UUID.randomUUID(),
-                           timestamp,
-                           isOver ? TaskStatus.SUCCESS : TaskStatus.CREATED,
-                           List.of(),
-                           List.of(),
-                           List.of(new ProcessFileDto("testFilePath", "IVA-RESULT", ProcessFileStatus.VALIDATED, "tesFileName", "testDocId", timestamp)),
-                           List.of(),
-                           List.of(new ProcessRunDto(UUID.randomUUID(), timestamp, List.of()),
-                                   new ProcessRunDto(UUID.randomUUID(), timestamp, List.of())),
-                           List.of(new TaskParameterDto("USE_PROJECTION", "BOOLEAN", "true", "true"),
-                                   new TaskParameterDto("EXCLUDED_BRANCHES", CoreValidD2PostProcessingConstants.STRING_TYPE, "excluded;branches", "default;excluded;branches"),
-                                   new TaskParameterDto(CoreValidD2PostProcessingConstants.JUSTIFICATION_MESSAGE_ID, CoreValidD2PostProcessingConstants.STRING_TYPE, "justification message", "default message"))
-                           );
     }
 }

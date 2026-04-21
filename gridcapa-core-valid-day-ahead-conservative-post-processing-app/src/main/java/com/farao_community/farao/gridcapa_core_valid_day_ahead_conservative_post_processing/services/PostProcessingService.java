@@ -98,7 +98,8 @@ public class PostProcessingService {
                                        .stream()
                                        .filter(file -> file.getProcessFileStatus() == VALIDATED
                                                        && IVA_RESULT.equals(file.getFileType()))
-                                       .forEach(file -> ivaResults.put(task, getIvaResult(file)))
+                                       .map(this::getIvaResult)
+                                       .forEach(iva -> ivaResults.put(task, iva))
         );
     }
 

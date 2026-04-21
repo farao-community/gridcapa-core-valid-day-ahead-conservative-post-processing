@@ -6,13 +6,9 @@
  */
 package com.farao_community.farao.gridcapa_core_valid_day_ahead_conservative_post_processing.services;
 
-import com.farao_community.farao.gridcapa.task_manager.api.ProcessFileDto;
-import com.farao_community.farao.gridcapa.task_manager.api.ProcessFileStatus;
-import com.farao_community.farao.gridcapa.task_manager.api.ProcessRunDto;
 import com.farao_community.farao.gridcapa.task_manager.api.TaskDto;
-import com.farao_community.farao.gridcapa.task_manager.api.TaskParameterDto;
-import com.farao_community.farao.gridcapa.task_manager.api.TaskStatus;
 import com.farao_community.farao.gridcapa_core_valid_day_ahead_conservative.api.domain.IvaBranchData;
+import com.farao_community.farao.gridcapa_core_valid_day_ahead_conservative_post_processing.CoreValidD2ConservativeTestUtils;
 import com.farao_community.farao.gridcapa_core_valid_day_ahead_conservative_post_processing.CoreValidD2PostProcessingConstants;
 import com.farao_community.farao.gridcapa_core_valid_day_ahead_conservative_post_processing.fbconstraint.xsd.AdjustmentValueType;
 import com.farao_community.farao.gridcapa_core_valid_day_ahead_conservative_post_processing.fbconstraint.xsd.FlowBasedConstraintUpdateDocument;
@@ -34,7 +30,6 @@ import java.time.ZoneOffset;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 class DailyF310FileMapperTest {
 
@@ -110,11 +105,11 @@ class DailyF310FileMapperTest {
 
     private Map<TaskDto, List<IvaBranchData>> getTestMap() {
         final Map<TaskDto, List<IvaBranchData>>  testMap = new LinkedHashMap<>();
-        testMap.put(getTestTaskDto(OffsetDateTime.of(2025, 11, 28, 12, 0, 0, 0, ZoneOffset.UTC), false),
+        testMap.put(CoreValidD2ConservativeTestUtils.getTestTaskDto(OffsetDateTime.of(2025, 11, 28, 12, 0, 0, 0, ZoneOffset.UTC), false),
                     getTestIvaBranches());
-        testMap.put(getTestTaskDto(OffsetDateTime.of(2025, 11, 28, 13, 0, 0, 0, ZoneOffset.UTC), false),
+        testMap.put(CoreValidD2ConservativeTestUtils.getTestTaskDto(OffsetDateTime.of(2025, 11, 28, 13, 0, 0, 0, ZoneOffset.UTC), false),
                     getTestIvaBranches());
-        testMap.put(getTestTaskDto(OffsetDateTime.of(2025, 11, 28, 14, 0, 0, 0, ZoneOffset.UTC), true),
+        testMap.put(CoreValidD2ConservativeTestUtils.getTestTaskDto(OffsetDateTime.of(2025, 11, 28, 14, 0, 0, 0, ZoneOffset.UTC), true),
                     getTestIvaBranches());
         return testMap;
     }
@@ -130,20 +125,4 @@ class DailyF310FileMapperTest {
         }
     }
 
-    private static TaskDto getTestTaskDto(final OffsetDateTime timestamp, boolean isOnlyDefaultMessage) {
-        return new TaskDto(UUID.randomUUID(),
-                           timestamp,
-                           TaskStatus.SUCCESS,
-                           List.of(),
-                           List.of(),
-                           List.of(new ProcessFileDto("testFilePath", "IVA-RESULT", ProcessFileStatus.VALIDATED, "tesFileName", "testDocId", timestamp)),
-                           List.of(),
-                           List.of(new ProcessRunDto(UUID.randomUUID(), timestamp, List.of()),
-                                   new ProcessRunDto(UUID.randomUUID(), timestamp, List.of())),
-                           List.of(new TaskParameterDto(CoreValidD2PostProcessingConstants.JUSTIFICATION_MESSAGE_ID,
-                                                        CoreValidD2PostProcessingConstants.STRING_TYPE,
-                                                        isOnlyDefaultMessage ? null : "justification message",
-                                                        "default message"))
-        );
-    }
 }

@@ -62,8 +62,8 @@ public class CoreValidD2PostProcessingHandler {
                 if (areAllHourlyTasksFinished(localDate)) {
                     final Set<TaskDto> allTaskDtoForBusinessDate = getAllTaskDtoForBusinessDate(localDate);
                     // Only perform post processing if a task from local date was updated
-                    final boolean anyMatch = allTaskDtoForBusinessDate.stream().map(TaskDto::getId).anyMatch(uuid -> uuid.equals(taskDtoUpdated.getId()));
-                    if (anyMatch) {
+                    final boolean anyTasksHaveBeenUpdated = allTaskDtoForBusinessDate.stream().map(TaskDto::getId).anyMatch(uuid -> uuid.equals(taskDtoUpdated.getId()));
+                    if (anyTasksHaveBeenUpdated) {
                         postProcessingService.processTasks(localDate, allTaskDtoForBusinessDate);
                     }
                 }
