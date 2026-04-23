@@ -1,4 +1,4 @@
-FROM farao/farao-computation-base:1.9.0 AS BUILDER
+FROM eclipse-temurin:21-jre-alpine AS BUILDER
 ARG JAR_FILE=gridcapa-core-valid-day-ahead-conservative-post-processing-app/target/*.jar
 COPY ${JAR_FILE} app.jar
 RUN mkdir -p /tmp/app  \
@@ -6,7 +6,7 @@ RUN mkdir -p /tmp/app  \
     -jar /app.jar extract --layers --launcher \
     --destination /tmp/app
 
-FROM farao/farao-computation-base:1.9.0
+FROM eclipse-temurin:21-jre-alpine
 COPY --from=BUILDER /tmp/app/dependencies/ ./
 COPY --from=BUILDER /tmp/app/spring-boot-loader/ ./
 COPY --from=BUILDER /tmp/app/application/ ./
