@@ -25,12 +25,6 @@
         </license>
     </licenses>
 
-    <scm>
-        <connection>scm:git:https://github.com/farao-community/gridcapa-core-valid-day-ahead-conservative-post-processing.git</connection>
-        <developerConnection>scm:git:https://github.com/farao-community/gridcapa-core-valid-day-ahead-conservative-post-processing.git</developerConnection>
-        <url>https://github.com/farao-community/gridcapa-core-valid-day-ahead-conservative-post-processing.git</url>
-    </scm>
-
     <developers>
         <developer>
             <name>Marc SCHWITZGUEBEL</name>
