@@ -1,0 +1,153 @@
+[{
+  "cnec" : {
+    "necId" : "testId",
+    "neName" : "testName",
+    "tso" : "testTSO",
+    "contingencyName" : "testContingency",
+    "branchStatus" : "testBS",
+    "ramValues" : {
+      "ram" : 0,
+      "ram0Core" : 227,
+      "minRamFactor" : 0,
+      "amr" : 1000,
+      "ltaMargin" : 0,
+      "cva" : 500,
+      "iva" : 0
+    },
+    "fValues" : {
+      "fMax" : 1200,
+      "frm" : 300,
+      "fRef" : 0,
+      "f0Core" : 800,
+      "fUaf" : 0,
+      "f0All" : 0,
+      "fLtaMax" : 0
+    },
+    "ptdfValues" : {
+      "PT_CCC" : 0.5,
+      "PT_BBB" : 0.25,
+      "PT_AAA" : 0.1
+    }
+  },
+  "minRealRam" : 350,
+  "conservativeIva" : 60,
+  "ivaMax" : 200,
+  "worstVertices" : [ {
+    "realRam" : -250,
+    "vertex" : {
+      "vertexId" : 2,
+      "coordinates" : {
+        "AA" : 570,
+        "BB" : 400,
+        "CC" : 640
+      }
+    }
+  }, {
+    "realRam" : -70,
+    "vertex" : {
+      "vertexId" : 8,
+      "coordinates" : {
+        "AA" : 630,
+        "BB" : 200,
+        "CC" : 300
+      }
+    }
+  }, {
+    "realRam" : -25,
+    "vertex" : {
+      "vertexId" : 5,
+      "coordinates" : {
+        "AA" : 180,
+        "BB" : 400,
+        "CC" : 300
+      }
+    }
+  }, {
+    "realRam" : -18,
+    "vertex" : {
+      "vertexId" : 3,
+      "coordinates" : {
+        "AA" : 450,
+        "BB" : 200,
+        "CC" : 300
+      }
+    }
+  } ]
+},
+  {
+    "cnec" : {
+      "necId" : "testId",
+      "neName" : "testName",
+      "tso" : "testTSO",
+      "contingencyName" : "testContingency",
+      "branchStatus" : "testBS",
+      "ramValues" : {
+        "ram" : 0,
+        "ram0Core" : 227,
+        "minRamFactor" : 0,
+        "amr" : 1000,
+        "ltaMargin" : 0,
+        "cva" : 500,
+        "iva" : 0
+      },
+      "fValues" : {
+        "fMax" : 1200,
+        "frm" : 300,
+        "fRef" : 0,
+        "f0Core" : 800,
+        "fUaf" : 0,
+        "f0All" : 0,
+        "fLtaMax" : 0
+      },
+      "ptdfValues" : {
+        "PT_CCC" : 0.5,
+        "PT_BBB" : 0.25,
+        "PT_AAA" : 0.1
+      }
+    },
+    "minRealRam" : 350,
+    "conservativeIva" : 60,
+    "ivaMax" : 200,
+    "worstVertices" : [ {
+      "realRam" : -250,
+      "vertex" : {
+        "vertexId" : 2,
+        "coordinates" : {
+          "AA" : 570,
+          "BB" : 400,
+          "CC" : 640
+        }
+      }
+    }, {
+      "realRam" : -70,
+      "vertex" : {
+        "vertexId" : 8,
+        "coordinates" : {
+          "AA" : 630,
+          "BB" : 200,
+          "CC" : 300
+        }
+      }
+    }, {
+      "realRam" : -25,
+      "vertex" : {
+        "vertexId" : 5,
+        "coordinates" : {
+          "AA" : 180,
+          "BB" : 400,
+          "CC" : 300
+        }
+      }
+    }, {
+      "realRam" : -18,
+      "vertex" : {
+        "vertexId" : 3,
+        "coordinates" : {
+          "AA" : 450,
+          "BB" : 200,
+          "CC" : 300
+        }
+      }
+    } ]
+  }
+]

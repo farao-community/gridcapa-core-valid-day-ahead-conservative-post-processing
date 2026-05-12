@@ -6,9 +6,12 @@
  */
 package com.farao_community.farao.gridcapa_core_valid_day_ahead_conservative_post_processing;
 
+import com.farao_community.farao.gridcapa_core_valid_day_ahead_conservative_post_processing.configuration.CoreValidD2PostProcessingConfiguration;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 
+@EnableConfigurationProperties({CoreValidD2PostProcessingConfiguration.class})
 @SuppressWarnings("hideutilityclassconstructor")
 @SpringBootApplication
 public class CoreValidD2ConservativePostProcessingApplication {

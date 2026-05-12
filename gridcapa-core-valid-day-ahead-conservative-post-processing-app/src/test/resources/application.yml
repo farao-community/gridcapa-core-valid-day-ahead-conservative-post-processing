@@ -1,0 +1,13 @@
+core-valid-d2-post-processing:
+  process:
+    tag: CORE_VALID_D2
+    timezone: CET
+  url:
+    task-manager-business-date-url: http://test-dummy/tasks/businessdate/
+    task-manager-timestamp-url: http://test-dummy/tasks/
+minio-adapter:
+  bucket: bucket-for-tests
+  base-path: base/path/for/tests
+  access-key: gridcapa
+  secret-key: gridcapa-secret
+  url: https://minio.test/

@@ -1,0 +1,183 @@
+<?xml version='1.0' encoding='UTF-8'?> <!-- UNI-LT CCCt adaptation: receiverCategory added for ReturnedBranchesType and AdjustmentValuesType. Version increased to 14 (from 13)-->
+<schema xmlns="http://www.w3.org/2001/XMLSchema" xmlns:ecc="etso-core-cmpts.xsd" xmlns:fb="flowbased" attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="flowbased">
+  <import namespace="etso-core-cmpts.xsd" schemaLocation="etso-core-cmpts.xsd"/>
+  <element name="FlowBasedConstraintUpdateDocument">
+    <complexType>
+      <sequence>
+        <element name="DocumentIdentification" type="ecc:IdentificationType"/>
+        <element name="DocumentVersion" type="ecc:VersionType"/>
+        <element name="DocumentType" type="ecc:MessageType"/>
+        <element name="ProcessType" type="ecc:ProcessType"/>
+        <element name="SenderIdentification" type="ecc:PartyType"/>
+        <element name="SenderRole" type="ecc:RoleType"/>
+        <element name="ReceiverIdentification" type="ecc:PartyType"/>
+        <element name="ReceiverRole" type="ecc:RoleType"/>
+        <element name="ReceiverCategory" type="ecc:CodeType" minOccurs="0" maxOccurs="1"/>
+        <element name="CreationDateTime" type="ecc:MessageDateTimeType"/>
+        <element name="ConstraintTimeInterval" type="ecc:TimeIntervalType"/>
+        <element name="Domain" type="ecc:AreaType"/>
+        <element minOccurs="0" name="ReturnedBranches" type="fb:ReturnedBranchesType"/>
+        <element minOccurs="0" name="AdjustmentValues" type="fb:AdjustmentValuesType"/>
+        <element minOccurs="0" name="MinRAMReductions" type="fb:MinRAMReductionsType"/>
+      </sequence>
+      <attribute name="DtdVersion" type="string" use="required"/>
+      <attribute name="DtdRelease" type="string" use="required"/>
+    </complexType>
+  </element>
+  <complexType name="ReturnedBranchesType">
+    <sequence>
+      <element maxOccurs="unbounded" minOccurs="0" name="ReturnedBranch" type="fb:ReturnedBranchType"/>
+    </sequence>
+  </complexType>
+  <complexType name="ReturnedBranchType">
+    <sequence>
+      <element name="timeInterval" type="ecc:TimeIntervalType"/>
+      <element minOccurs="1" name="CNEC" type="boolean"/>
+      <element minOccurs="0" name="justification" type="fb:nonEmptyString"/>
+    </sequence>
+    <attribute name="name" type="fb:nonEmptyString" use="optional"/>
+    <attribute name="id" type="fb:idString"/>
+	  <attribute name="receiverCategory" type="fb:CodeType" use="optional"/>	<!-- Added. Optional. CodeType = string with max length 3 -->
+  </complexType>
+  <complexType name="AdjustmentValuesType">
+    <sequence>
+      <element maxOccurs="unbounded" minOccurs="0" name="AdjustmentValue" type="fb:AdjustmentValueType"/>
+    </sequence>
+  </complexType>
+  <complexType name="AdjustmentValueType">
+    <sequence>
+      <element name="timeInterval" type="ecc:TimeIntervalType"/>
+      <element minOccurs="0" name="CVA" type="float"/>
+      <element minOccurs="0" name="IVA" type="float"/>
+      <element minOccurs="0" name="IVAShare" type="float"/>
+      <element minOccurs="0" name="justification" type="fb:nonEmptyString"/>
+      <element minOccurs="0" name="reportingInformation" type="fb:ReportingInformationType"/>
+    </sequence>
+    <attribute name="name" type="fb:nonEmptyString" use="optional"/>
+    <attribute name="id" type="fb:idString"/>
+	  <attribute name="receiverCategory" type="fb:CodeType" use="optional"/>	<!-- Added. Optional. CodeType = string with max length 3 -->
+  </complexType>
+  <complexType name="ReportingInformationType">
+    <sequence>
+      <element name="tso" type="ecc:PartyType" minOccurs="0"/>
+      <element name="overloadedElements" type="fb:OverloadedElementsType" minOccurs="0"/>
+      <element name="circumstance" type="fb:CircumstanceType" minOccurs="0"/>
+      <element name="fallback" type="boolean" minOccurs="0"/>
+      <element name="comment" type="fb:nonEmptyString" minOccurs="0"/>
+    </sequence>
+  </complexType>
+  <complexType name="OverloadedElementsType">
+    <sequence>
+      <element minOccurs="0" maxOccurs="unbounded" name="overloadedElement" type="fb:OverloadedElementType"/>
+    </sequence>
+  </complexType>
+  <complexType name="OverloadedElementType">
+    <sequence>
+      <element name="tso" type="ecc:PartyType" minOccurs="0"/>
+      <element minOccurs="0" name="branch" type="fb:BranchType">
+        <key name="overloadedElementBranch__order_OR_elementName">
+          <selector xpath="."/>
+          <field xpath="@order|@elementName"/>
+        </key>
+      </element>
+      <element name="contingencies" type="fb:ContingenciesType" minOccurs="0"/>
+    </sequence>
+  </complexType>
+  <simpleType name="nodeType">
+    <restriction base="string">
+      <pattern value=".{6}\d(\p{L}|\d| )?"/>
+    </restriction>
+  </simpleType>
+  <complexType name="BranchType">
+    <attribute name="from" type="fb:nodeType" use="optional"/>
+    <attribute name="to" type="fb:nodeType" use="optional"/>
+    <attribute name="order" use="optional">
+      <simpleType>
+        <restriction base="string">
+          <pattern value="[1-9]|[A-Z]"/>
+        </restriction>
+      </simpleType>
+    </attribute>
+    <attribute name="elementName" type="fb:nonEmptyString" use="optional"/>
+    <attribute name="name" type="fb:nonEmptyString" use="optional"/>
+    <attribute name="eic" type="fb:nonEmptyString" use="optional"/>
+  </complexType>
+  <complexType name="ContingenciesType">
+    <sequence>
+      <element minOccurs="0" maxOccurs="unbounded" name="contingency" type="fb:ContingencyType"/>
+    </sequence>
+  </complexType>
+  <complexType name="ContingencyType">
+    <sequence>
+      <element name="tso" type="ecc:PartyType"/>
+      <element minOccurs="0" name="branch" type="fb:BranchType">
+        <key name="contingencyBranch__order_OR_elementName">
+          <selector xpath="."/>
+          <field xpath="@order|@elementName"/>
+        </key>
+      </element>
+    </sequence>
+  </complexType>
+  <complexType name="CircumstanceType">
+    <sequence>
+      <element name="netpositions" type="fb:Netpositions_Type" minOccurs="0"/>
+    </sequence>
+  </complexType>
+  <complexType name="Netpositions_Type">
+    <sequence>
+      <element name="np" type="fb:Np_Type" minOccurs="0" maxOccurs="unbounded"/>
+    </sequence>
+  </complexType>
+  <complexType name="Np_Type">
+    <sequence>
+      <element name="hub" type="fb:Hub_Type"/>
+      <element name="value" type="float"/>
+    </sequence>
+  </complexType>
+  <complexType name="Hub_Type">
+    <attribute name="name" type="fb:Name_Type" use="required"/>
+    <attribute name="id" type="string" use="optional"/>
+  </complexType>
+  <simpleType name="Name_Type">
+    <restriction base="string">
+      <pattern value="[a-zA-Z0-9_]{2,40}"/>
+    </restriction>
+  </simpleType>
+  <complexType name="MinRAMReductionsType">
+    <sequence>
+      <element maxOccurs="unbounded" minOccurs="0" name="MinRAMReduction" type="fb:MinRAMReductionType"/>
+    </sequence>
+  </complexType>
+  <complexType name="MinRAMReductionType">
+    <sequence>
+      <element name="timeInterval" type="ecc:TimeIntervalType"/>
+      <element name="minRAMfactor" type="fb:minRAMfactor_Type"/>
+      <element name="justification" type="fb:nonEmptyString"/>
+    </sequence>
+    <attribute name="name" type="fb:nonEmptyString" use="optional"/>
+    <attribute name="id" type="fb:idString"/>
+  </complexType>
+  <simpleType name="minRAMfactor_Type">
+    <restriction base="decimal">
+      <minInclusive value="0"/>
+      <maxInclusive value="100"/>
+    </restriction>
+  </simpleType>
+  <simpleType name="nonEmptyString">
+    <restriction base="string">
+      <minLength value="1"/>
+      <pattern value="([a-zA-Z 0-9_.,()/=!\[\]#%&amp;*;'+:?-])*"/>
+    </restriction>
+  </simpleType>
+  <simpleType name="idString">
+    <restriction base="string">
+      <minLength value="1"/>
+      <maxLength value="100"/>
+    </restriction>
+  </simpleType>
+  <simpleType name="CodeType"> <!-- Added. New type had to be defined. CodeType = string with max length 3 -->
+    <restriction base="string">
+      <maxLength value="3"/>
+    </restriction>
+  </simpleType>
+</schema>

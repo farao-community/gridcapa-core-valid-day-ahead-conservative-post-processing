@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jxb:bindings version="3.0"
+              xmlns:jxb="https://jakarta.ee/xml/ns/jaxb"
+              xmlns:inheritance="http://jaxb2-commons.dev.java.net/basic/inheritance"
+              xmlns:xs="http://www.w3.org/2001/XMLSchema">
+    <jxb:bindings schemaLocation="../xsd/flowbasedconstraintupdatedocument-14.xsd">
+        <jxb:schemaBindings>
+            <jxb:package name="com.farao_community.farao.gridcapa_core_valid_day_ahead_conservative_post_processing.fbconstraint.xsd" />
+        </jxb:schemaBindings>
+    </jxb:bindings>
+    <jxb:bindings schemaLocation="../xsd/etso-code-lists.xsd">
+        <jxb:schemaBindings>
+            <jxb:package name="com.farao_community.farao.gridcapa_core_valid_day_ahead_conservative_post_processing.fbconstraint.xsd.etso" />
+        </jxb:schemaBindings>
+    </jxb:bindings>
+    <jxb:bindings schemaLocation="../xsd/etso-core-cmpts.xsd">
+        <jxb:schemaBindings>
+            <jxb:package name="com.farao_community.farao.gridcapa_core_valid_day_ahead_conservative_post_processing.fbconstraint.xsd.etso" />
+        </jxb:schemaBindings>
+    </jxb:bindings>
+</jxb:bindings>
