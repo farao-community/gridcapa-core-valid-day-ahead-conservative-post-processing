@@ -19,7 +19,7 @@ public final class CoreValidD2PostProcessingConstants {
     public static final String XTSO_CS_W_STRING_VALUE = "17XTSO-CS------W";
     public static final String JUSTIFICATION_MESSAGE_ID = "JUSTIFICATION_MESSAGE";
     public static final String STRING_TYPE = "STRING";
-    public static final String GENERATED_FILE_PATTERN = "%s-F310-v%s-" + XFR_RTE_Q_STRING_VALUE + "-to-" + XTSO_CS_W_STRING_VALUE + ".xml";
+    public static final String IVA_GENERATED_FILE_PATTERN = "%s-F310-v%s-" + XFR_RTE_Q_STRING_VALUE + "-to-" + XTSO_CS_W_STRING_VALUE + ".xml";
     public static final String VALIDATION_TYPE_COMMENT = "\t<!--validation type 1-->\n";
     public static final String NO_BRANCH_COMMENT = "\t<!--no ReturnedBranch-->\n";
     public static final String NO_ADJUSTMENT_COMMENT = "\t<!--no AdjustmentValue-->\n";
@@ -28,6 +28,9 @@ public final class CoreValidD2PostProcessingConstants {
     public static final String OUTPUT_XML_RELEASE = "4";
     public static final String OUTPUT_XML_VERSION = "0";
     public static final String IVA_RESULT = "IVA-RESULT";
+    public static final String STUDY_POINT = "STUDY-POINT";
+    public static final String STUDY_POINT_CSV_HEADER = "Periode;ID;NP_AT;NP_BE;NP_BE_ALEGrO;NP_CZ;NP_DE;NP_DE_ALEGrO;NP_FR;NP_HR;NP_HU;NP_NL;NP_PL;NP_RO;NP_SI;NP_SK";
+    public static final String STUDY_POINT_GENERATED_FILE_PATTERN = "%s-Points_Etude-v%s.csv";
     public static final String DOC_ID_PATTERN = "-%s-F310-v%s";
     public static final DateTimeFormatter YYYYMMDD_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd");
 

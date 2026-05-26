@@ -1,0 +1,24 @@
+[
+  {
+    "position": 2,
+    "vertex": {
+      "vertexId": 2,
+      "coordinates": {
+        "AA": 570,
+        "BB": 400,
+        "CC": 640
+      }
+    }
+  },
+  {
+    "position": 2,
+    "vertex": {
+      "vertexId": 57,
+      "coordinates": {
+        "AA": 570,
+        "BB": 400,
+        "CC": 640
+      }
+    }
+  }
+]
