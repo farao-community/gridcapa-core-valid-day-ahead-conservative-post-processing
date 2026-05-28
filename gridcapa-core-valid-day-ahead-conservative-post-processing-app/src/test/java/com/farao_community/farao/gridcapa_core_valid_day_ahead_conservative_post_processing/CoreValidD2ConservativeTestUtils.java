@@ -48,4 +48,22 @@ public final class CoreValidD2ConservativeTestUtils {
                                                         "default message"))
         );
     }
+
+    public static TaskDto getTestTaskDtoNoOutput() {
+        final OffsetDateTime timestamp = OffsetDateTime.of(2025, 11, 28, 12, 0, 0, 0, ZoneOffset.UTC);
+        return new TaskDto(UUID.randomUUID(),
+                           timestamp,
+                           TaskStatus.SUCCESS,
+                           List.of(),
+                           List.of(),
+                           List.of(),
+                           List.of(),
+                           List.of(new ProcessRunDto(UUID.randomUUID(), timestamp, List.of()),
+                                   new ProcessRunDto(UUID.randomUUID(), timestamp, List.of())),
+                           List.of(new TaskParameterDto(CoreValidD2PostProcessingConstants.JUSTIFICATION_MESSAGE_ID,
+                                                        CoreValidD2PostProcessingConstants.STRING_TYPE,
+                                                        "justification message",
+                                                        "default message"))
+        );
+    }
 }
