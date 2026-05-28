@@ -2,6 +2,8 @@ core-valid-d2-post-processing:
   process:
     tag: CORE_VALID_D2
     timezone: CET
+    fetch-task-manager-retry-count: 4
+    fetch-task-manager-retry-wait: 3
   url:
     task-manager-business-date-url: http://test-dummy/tasks/businessdate/
     task-manager-timestamp-url: http://test-dummy/tasks/

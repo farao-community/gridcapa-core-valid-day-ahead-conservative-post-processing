@@ -6,7 +6,9 @@
  */
 package com.farao_community.farao.gridcapa_core_valid_day_ahead_conservative_post_processing;
 
+import com.farao_community.farao.gridcapa.task_manager.api.ProcessFileStatus;
 import com.farao_community.farao.gridcapa.task_manager.api.TaskDto;
+import com.farao_community.farao.gridcapa.task_manager.api.TaskStatus;
 import com.farao_community.farao.gridcapa_core_valid_day_ahead_conservative_post_processing.configuration.CoreValidD2PostProcessingConfiguration;
 import com.farao_community.farao.gridcapa_core_valid_day_ahead_conservative_post_processing.services.PostProcessingService;
 import org.slf4j.Logger;
@@ -24,6 +26,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 @Service
@@ -95,12 +98,25 @@ public class CoreValidD2PostProcessingHandler {
     private Set<TaskDto> getAllTaskDtoForBusinessDate(final LocalDate localDate) {
         final String requestUrl = getUrlToGetAllTasksOfTheDay(localDate);
         LOGGER.info("Requesting URL: {}", requestUrl);
-
+        final int maxRetryCount = coreValidD2PostProcessingConfiguration.process().fetchTaskManagerRetryCount();
+        final int retryWaitPeriod = coreValidD2PostProcessingConfiguration.process().fetchTaskManagerRetryWait();
+        int retrycounter = 0;
+        boolean allOutputsAvailable;
         try {
-            final ResponseEntity<TaskDto[]> responseEntity = restTemplateBuilder.build().getForEntity(requestUrl, TaskDto[].class);
-            if (responseEntity.getBody() != null && responseEntity.getStatusCode() == HttpStatus.OK) {
-                return new HashSet<>(Arrays.asList(responseEntity.getBody()));
-            }
+            do {
+                final ResponseEntity<TaskDto[]> responseEntity = restTemplateBuilder.build().getForEntity(requestUrl, TaskDto[].class);
+                if (responseEntity.getBody() != null && responseEntity.getStatusCode() == HttpStatus.OK) {
+                    final Set<TaskDto> allTasks = new HashSet<>(Arrays.asList(responseEntity.getBody()));
+                    allOutputsAvailable = allTasks.stream()
+                            .filter(task -> task.getStatus().equals(TaskStatus.SUCCESS))
+                            .allMatch(this::checkAllOutputFileValidated);
+                    if (allOutputsAvailable) {
+                        return new HashSet<>(Arrays.asList(responseEntity.getBody()));
+                    } else {
+                        TimeUnit.SECONDS.sleep(retryWaitPeriod);
+                    }
+                }
+            } while (retrycounter++ < maxRetryCount);
         } catch (final Exception e) {
             LOGGER.error("Error during automatic launch", e);
         }
@@ -115,4 +131,9 @@ public class CoreValidD2PostProcessingHandler {
     private String getUrlToGetAllTasksOfTheDay(final LocalDate localDate) {
         return coreValidD2PostProcessingConfiguration.url().taskManagerBusinessDateUrl() + localDate;
     }
+
+    private boolean checkAllOutputFileValidated(final TaskDto taskDtoUpdated) {
+        return taskDtoUpdated.getOutputs().stream().allMatch(output -> output.getProcessFileStatus().equals(ProcessFileStatus.VALIDATED));
+    }
+
 }
