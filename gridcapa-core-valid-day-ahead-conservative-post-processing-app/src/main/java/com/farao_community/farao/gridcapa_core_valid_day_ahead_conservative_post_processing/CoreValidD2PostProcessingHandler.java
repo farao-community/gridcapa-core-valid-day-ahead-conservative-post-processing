@@ -95,7 +95,7 @@ public class CoreValidD2PostProcessingHandler {
     /**
      * Gather the set of tasks associated to localDate by requesting TaskManager
      */
-    private Set<TaskDto> getAllTaskDtoForBusinessDate(final LocalDate localDate) throws InterruptedException {
+    private Set<TaskDto> getAllTaskDtoForBusinessDate(final LocalDate localDate) {
         final String requestUrl = getUrlToGetAllTasksOfTheDay(localDate);
         LOGGER.info("Requesting URL: {}", requestUrl);
         final int maxRetryCount = coreValidD2PostProcessingConfiguration.process().fetchTaskManagerRetryCount();
@@ -112,13 +112,12 @@ public class CoreValidD2PostProcessingHandler {
                             .allMatch(this::checkAllOutputFileValidated);
                     if (allOutputsAvailable) {
                         return new HashSet<>(Arrays.asList(responseEntity.getBody()));
-                    } else {
-                        TimeUnit.SECONDS.sleep(retryWaitPeriod);
                     }
                 }
+                TimeUnit.SECONDS.sleep(retryWaitPeriod);
             } while (retrycounter++ < maxRetryCount);
         } catch (InterruptedException interruptedException) {
-            throw interruptedException;
+            Thread.currentThread().interrupt();
         } catch (final Exception e) {
             LOGGER.error("Error during automatic launch", e);
         }
