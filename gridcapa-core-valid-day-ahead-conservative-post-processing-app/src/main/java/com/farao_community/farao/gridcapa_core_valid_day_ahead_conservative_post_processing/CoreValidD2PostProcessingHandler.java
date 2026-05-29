@@ -109,10 +109,10 @@ public class CoreValidD2PostProcessingHandler {
                 if (responseEntity.getBody() != null && responseEntity.getStatusCode() == HttpStatus.OK) {
                     final Set<TaskDto> allTasks = new HashSet<>(Arrays.asList(responseEntity.getBody()));
                     allOutputsAvailable = allTasks.stream()
-                            .filter(task -> task.getStatus().equals(TaskStatus.SUCCESS))
-                            .allMatch(this::checkAllOutputFileValidated);
+                            .filter(task -> task.getStatus() == TaskStatus.SUCCESS)
+                            .allMatch(this::checkAllOutputFilesValidated);
                     if (allOutputsAvailable) {
-                        return new HashSet<>(Arrays.asList(responseEntity.getBody()));
+                        return allTasks;
                     }
                 }
                 TimeUnit.SECONDS.sleep(retryWaitPeriod);
@@ -134,7 +134,7 @@ public class CoreValidD2PostProcessingHandler {
         return coreValidD2PostProcessingConfiguration.url().taskManagerBusinessDateUrl() + localDate;
     }
 
-    private boolean checkAllOutputFileValidated(final TaskDto taskDtoUpdated) {
+    private boolean checkAllOutputFilesValidated(final TaskDto taskDtoUpdated) {
         return taskDtoUpdated.getOutputs().stream().allMatch(output -> output.getProcessFileStatus().equals(ProcessFileStatus.VALIDATED));
     }
 
