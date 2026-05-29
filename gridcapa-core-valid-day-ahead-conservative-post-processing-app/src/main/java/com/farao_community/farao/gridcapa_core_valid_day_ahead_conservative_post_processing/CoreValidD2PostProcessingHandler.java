@@ -94,6 +94,7 @@ public class CoreValidD2PostProcessingHandler {
 
     /**
      * Gather the set of tasks associated to localDate by requesting TaskManager
+     * And retry until all finished tasks have outputs
      */
     private Set<TaskDto> getAllTaskDtoForBusinessDate(final LocalDate localDate) {
         final String requestUrl = getUrlToGetAllTasksOfTheDay(localDate);
