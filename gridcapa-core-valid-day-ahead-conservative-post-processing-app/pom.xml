@@ -13,6 +13,10 @@
     <version>1.0.0-SNAPSHOT</version>
     <packaging>jar</packaging>
 
+    <name>GridCapa CORE VALID DAY AHEAD CONSERVATIVE post-processing</name>
+    <description>Application that allows post-processing core valid D2 tasks</description>
+    <url>http://www.farao-community.com</url>
+
     <properties>
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
