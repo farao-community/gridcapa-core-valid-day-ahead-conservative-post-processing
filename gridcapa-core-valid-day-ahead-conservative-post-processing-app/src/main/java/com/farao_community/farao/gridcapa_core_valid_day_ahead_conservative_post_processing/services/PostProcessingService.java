@@ -80,8 +80,8 @@ public class PostProcessingService {
         final Map<TaskDto, List<IvaBranchData>> ivaResultsPerTask = new TreeMap<>(comparing(TaskDto::getTimestamp));
         final Map<TaskDto, List<StudyPoint>> studyPointsPerTask = new TreeMap<>(comparing(TaskDto::getTimestamp));
         fillMapOfOutputs(tasksToPostProcess, ivaResultsPerTask, studyPointsPerTask);
-        exportStudyPointResult(localDate, outputFileVersion, studyPointsPerTask);
         exportIvaResult(localDate, outputFileVersion, ivaResultsPerTask);
+        exportStudyPointResult(localDate, outputFileVersion, studyPointsPerTask);
     }
 
     private void exportStudyPointResult(final LocalDate localDate,

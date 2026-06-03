@@ -6,22 +6,14 @@
     "contingencyName" : "testContingency",
     "branchStatus" : "testBS",
     "ramValues" : {
-      "ram" : 0,
       "ram0Core" : 227,
-      "minRamFactor" : 0,
       "amr" : 1000,
-      "ltaMargin" : 0,
-      "cva" : 500,
-      "iva" : 0
+      "cva" : 500
     },
     "fValues" : {
       "fMax" : 1200,
       "frm" : 300,
-      "fRef" : 0,
-      "f0Core" : 800,
-      "fUaf" : 0,
-      "f0All" : 0,
-      "fLtaMax" : 0
+      "f0Core" : 800
     },
     "ptdfValues" : {
       "PT_CCC" : 0.5,
@@ -82,22 +74,14 @@
       "contingencyName" : "testContingency",
       "branchStatus" : "testBS",
       "ramValues" : {
-        "ram" : 0,
         "ram0Core" : 227,
-        "minRamFactor" : 0,
         "amr" : 1000,
-        "ltaMargin" : 0,
-        "cva" : 500,
-        "iva" : 0
+        "cva" : 500
       },
       "fValues" : {
         "fMax" : 1200,
         "frm" : 300,
-        "fRef" : 0,
-        "f0Core" : 800,
-        "fUaf" : 0,
-        "f0All" : 0,
-        "fLtaMax" : 0
+        "f0Core" : 800
       },
       "ptdfValues" : {
         "PT_CCC" : 0.5,
