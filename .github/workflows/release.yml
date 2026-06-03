@@ -31,8 +31,9 @@ jobs:
           server-password: MAVEN_PASSWORD
 
       - name: Change Maven version to release version
-        run: mvn --batch-mode versions:set -DgenerateBackupPoms=false -DnewVersion=${{ github.event.inputs.releaseVersion }}
-
+        run: mvn --batch-mode versions:set -DgenerateBackupPoms=false -DnewVersion=$RELEASE_VERSION
+        env:
+          RELEASE_VERSION: ${{ github.event.inputs.releaseVersion }}
       - name: Build with Maven
         run: mvn --batch-mode -Pdefault,coverage install
 
@@ -55,6 +56,7 @@ jobs:
           tagging_message: v${{ env.RELEASE_VERSION }}
         env:
           RELEASE_VERSION: ${{ github.event.inputs.releaseVersion }}
+
       - name: Release Maven package
         run: mvn --batch-mode -Pdefault,release deploy -DskipTests
         env:
@@ -71,18 +73,19 @@ jobs:
           name: farao/gridcapa-core-valid-day-ahead-conservative-post-processing
           username: farao
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-          tags: v${{ env.TAG }}
+          tags: v${{ env.RELEASE_VERSION }}
         env:
-          TAG: ${{ github.event.inputs.releaseVersion }}
+          RELEASE_VERSION: ${{ github.event.inputs.releaseVersion }}
 
       - name: Change Maven version to next version
-        run: mvn --batch-mode versions:set -DgenerateBackupPoms=false -DnewVersion=${{ env.NEXT_VERSION }}-SNAPSHOT
+        run: mvn --batch-mode versions:set -DgenerateBackupPoms=false -DnewVersion=$NEXT_VERSION-SNAPSHOT
         env:
           NEXT_VERSION: ${{ github.event.inputs.nextVersion }}
+
       - name: Commit next version
         uses: stefanzweifel/git-auto-commit-action@master
         with:
-          branch: next-release-v${{ env.NEXT_VERSION }}
+          branch: next-release-v${{ env.NEXT_VERSION  }}
           create_branch: true
           commit_message: Prepare next release ${{ env.NEXT_VERSION }}
           skip_fetch: true
@@ -99,8 +102,8 @@ jobs:
           message: Automatic merge after release ${{ env.RELEASE_VERSION }}
           github_token: ${{ secrets.REPO_ACCESS_TOKEN }}
         env:
-          NEXT_VERSION: ${{ github.event.inputs.nextVersion }}
           RELEASE_VERSION: ${{ github.event.inputs.releaseVersion }}
+          NEXT_VERSION: ${{ github.event.inputs.nextVersion }}
 
       - name: Delete merged branch
         uses: dawidd6/action-delete-branch@v3

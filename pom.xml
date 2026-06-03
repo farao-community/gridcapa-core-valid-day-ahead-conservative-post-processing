@@ -12,11 +12,9 @@
 
     <artifactId>gridcapa-core-valid-day-ahead-conservative-post-processing</artifactId>
     <version>1.0.0-SNAPSHOT</version>
-    <packaging>pom</packaging>
-
     <name>GridCapa CORE VALID DAY AHEAD CONSERVATIVE post-processing</name>
     <description>Application that allows post-processing core valid D2 tasks</description>
-    <url>http://www.farao-community.com</url>
+    <packaging>pom</packaging>
 
     <licenses>
         <license>
@@ -58,7 +56,6 @@
     </properties>
 
     <build>
-        <pluginManagement>
             <plugins>
                 <plugin>
                     <groupId>org.jvnet.jaxb</groupId>
@@ -66,7 +63,6 @@
                     <version>${maven.jaxb.version}</version>
                 </plugin>
             </plugins>
-        </pluginManagement>
     </build>
 
     <dependencyManagement>
