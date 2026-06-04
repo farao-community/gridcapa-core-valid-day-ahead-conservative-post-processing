@@ -24,6 +24,7 @@ import jakarta.xml.bind.JAXBException;
 import jakarta.xml.bind.Marshaller;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 
 import javax.xml.namespace.QName;
@@ -33,10 +34,12 @@ import java.io.InputStream;
 import java.io.StringWriter;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.function.Supplier;
 
 import static com.farao_community.farao.gridcapa.task_manager.api.ProcessFileStatus.VALIDATED;
 import static com.farao_community.farao.gridcapa_core_valid_day_ahead_conservative_post_processing.CoreValidD2PostProcessingConstants.DOMAIN_END_HEADER;
@@ -47,8 +50,7 @@ import static com.farao_community.farao.gridcapa_core_valid_day_ahead_conservati
 import static com.farao_community.farao.gridcapa_core_valid_day_ahead_conservative_post_processing.CoreValidD2PostProcessingConstants.OUTPUTS_DIR;
 import static com.farao_community.farao.gridcapa_core_valid_day_ahead_conservative_post_processing.CoreValidD2PostProcessingConstants.OUTPUT_XML_RELEASE;
 import static com.farao_community.farao.gridcapa_core_valid_day_ahead_conservative_post_processing.CoreValidD2PostProcessingConstants.OUTPUT_XML_VERSION;
-import static com.farao_community.farao.gridcapa_core_valid_day_ahead_conservative_post_processing.CoreValidD2PostProcessingConstants.STUDY_POINT;
-import static com.farao_community.farao.gridcapa_core_valid_day_ahead_conservative_post_processing.CoreValidD2PostProcessingConstants.STUDY_POINT_CSV_HEADER;
+import static com.farao_community.farao.gridcapa_core_valid_day_ahead_conservative_post_processing.CoreValidD2PostProcessingConstants.STUDY_POINTS;
 import static com.farao_community.farao.gridcapa_core_valid_day_ahead_conservative_post_processing.CoreValidD2PostProcessingConstants.STUDY_POINT_GENERATED_FILE_PATTERN;
 import static com.farao_community.farao.gridcapa_core_valid_day_ahead_conservative_post_processing.CoreValidD2PostProcessingConstants.VALIDATION_TYPE_COMMENT;
 import static com.farao_community.farao.gridcapa_core_valid_day_ahead_conservative_post_processing.CoreValidD2PostProcessingConstants.XSD_FILE_NAME;
@@ -87,8 +89,14 @@ public class PostProcessingService {
     private void exportStudyPointResult(final LocalDate localDate,
                                         final int outputFileVersion,
                                         final Map<TaskDto, List<StudyPoint>> studyPointsPerTask) {
+        // we need the keys for the header
+        final List<String> npKeys = getListofSortedNpKeys(studyPointsPerTask);
+        final List<String> header = new ArrayList<>();
+        header.add("Periode");
+        header.add("ID");
+        header.addAll(npKeys);
         final CSVFormat csvFormat = CSVFormat.DEFAULT.builder()
-                .setHeader(STUDY_POINT_CSV_HEADER)
+                .setHeader(header.toArray(new String[0]))
                 .setDelimiter(";")
                 .build();
         try (final StringWriter stringWriter = new StringWriter();
@@ -101,7 +109,6 @@ public class PostProcessingService {
                     final String id = position + "_" + vertex.vertexId();
                     myCsvPrint(csvPrinter, id);
                     final Map<String, Integer> nps = vertex.coordinates();
-                    final List<String> npKeys = nps.keySet().stream().sorted().toList();
                     npKeys.forEach(key -> myCsvPrint(csvPrinter, nps.get(key)));
                     myCsvPrintln(csvPrinter);
                 });
@@ -112,6 +119,24 @@ public class PostProcessingService {
         } catch (Exception e) {
             throw new CoreValidD2PostProcessingInternalException("Could not generate study point document file", e);
         }
+    }
+
+    private static @NotNull List<String> getListofSortedNpKeys(final Map<TaskDto, List<StudyPoint>> studyPointsPerTask) {
+        return studyPointsPerTask.values().stream()
+                .findFirst()
+                .orElseThrow(getCoreValidD2InternalExceptionSupplier())
+                .stream().findFirst()
+                .orElseThrow(getCoreValidD2InternalExceptionSupplier())
+                .vertex()
+                .coordinates()
+                .keySet()
+                .stream()
+                .sorted()
+                .toList();
+    }
+
+    private static @NotNull Supplier<CoreValidD2PostProcessingInternalException> getCoreValidD2InternalExceptionSupplier() {
+        return () -> new CoreValidD2PostProcessingInternalException("Could not generate study point document file: no study points");
     }
 
     private void myCsvPrint(CSVPrinter printer, Object toPrint) {
@@ -164,7 +189,7 @@ public class PostProcessingService {
         tasksToProcess.forEach(task ->
                                        task.getOutputs()
                                            .stream()
-                                           .filter(file -> fileFilterByType(file, STUDY_POINT))
+                                           .filter(file -> fileFilterByType(file, STUDY_POINTS))
                                            .map(this::getStudyPointResult)
                                            .forEach(studyPoint -> studyPointsPerTask.put(task, studyPoint))
         );

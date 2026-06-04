@@ -28,8 +28,7 @@ public final class CoreValidD2PostProcessingConstants {
     public static final String OUTPUT_XML_RELEASE = "4";
     public static final String OUTPUT_XML_VERSION = "0";
     public static final String IVA_RESULT = "IVA-RESULT";
-    public static final String STUDY_POINT = "STUDY-POINT";
-    public static final String STUDY_POINT_CSV_HEADER = "Periode;ID;NP_AT;NP_BE;NP_BE_ALEGrO;NP_CZ;NP_DE;NP_DE_ALEGrO;NP_FR;NP_HR;NP_HU;NP_NL;NP_PL;NP_RO;NP_SI;NP_SK";
+    public static final String STUDY_POINTS = "STUDY-POINTS";
     public static final String STUDY_POINT_GENERATED_FILE_PATTERN = "%s-Points_Etude-v%s.csv";
     public static final String DOC_ID_PATTERN = "-%s-F310-v%s";
     public static final DateTimeFormatter YYYYMMDD_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd");
