@@ -30,6 +30,7 @@ public final class CoreValidD2PostProcessingConstants {
     public static final String IVA_RESULT = "IVA-RESULT";
     public static final String STUDY_POINTS = "STUDY-POINTS";
     public static final String STUDY_POINT_GENERATED_FILE_PATTERN = "%s-Points_Etude-v%s.csv";
+    public static final String STUDY_POINTS_HEADER_PREFIX = "NP_";
     public static final String DOC_ID_PATTERN = "-%s-F310-v%s";
     public static final DateTimeFormatter YYYYMMDD_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd");
 

@@ -51,6 +51,7 @@ import static com.farao_community.farao.gridcapa_core_valid_day_ahead_conservati
 import static com.farao_community.farao.gridcapa_core_valid_day_ahead_conservative_post_processing.CoreValidD2PostProcessingConstants.OUTPUT_XML_RELEASE;
 import static com.farao_community.farao.gridcapa_core_valid_day_ahead_conservative_post_processing.CoreValidD2PostProcessingConstants.OUTPUT_XML_VERSION;
 import static com.farao_community.farao.gridcapa_core_valid_day_ahead_conservative_post_processing.CoreValidD2PostProcessingConstants.STUDY_POINTS;
+import static com.farao_community.farao.gridcapa_core_valid_day_ahead_conservative_post_processing.CoreValidD2PostProcessingConstants.STUDY_POINTS_HEADER_PREFIX;
 import static com.farao_community.farao.gridcapa_core_valid_day_ahead_conservative_post_processing.CoreValidD2PostProcessingConstants.STUDY_POINT_GENERATED_FILE_PATTERN;
 import static com.farao_community.farao.gridcapa_core_valid_day_ahead_conservative_post_processing.CoreValidD2PostProcessingConstants.VALIDATION_TYPE_COMMENT;
 import static com.farao_community.farao.gridcapa_core_valid_day_ahead_conservative_post_processing.CoreValidD2PostProcessingConstants.XSD_FILE_NAME;
@@ -124,7 +125,7 @@ public class PostProcessingService {
 
     private List<String> getHeaderNpKeys(final List<String> npKeys) {
         return npKeys.stream()
-                .map(s -> "NP_" + s)
+                .map(s -> STUDY_POINTS_HEADER_PREFIX + s)
                 .toList();
     }
 
