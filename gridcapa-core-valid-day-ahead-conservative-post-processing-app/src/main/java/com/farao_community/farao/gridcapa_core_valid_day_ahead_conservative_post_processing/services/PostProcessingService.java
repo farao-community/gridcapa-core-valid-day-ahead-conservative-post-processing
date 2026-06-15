@@ -91,10 +91,11 @@ public class PostProcessingService {
                                         final Map<TaskDto, List<StudyPoint>> studyPointsPerTask) {
         // we need the keys for the header
         final List<String> npKeys = getListofSortedNpKeys(studyPointsPerTask);
+        final List<String> headerNpKeys = getHeaderNpKeys(npKeys);
         final List<String> header = new ArrayList<>();
         header.add("Periode");
         header.add("ID");
-        header.addAll(npKeys);
+        header.addAll(headerNpKeys);
         final CSVFormat csvFormat = CSVFormat.DEFAULT.builder()
                 .setHeader(header.toArray(new String[0]))
                 .setDelimiter(";")
@@ -119,6 +120,12 @@ public class PostProcessingService {
         } catch (Exception e) {
             throw new CoreValidD2PostProcessingInternalException("Could not generate study point document file", e);
         }
+    }
+
+    private List<String> getHeaderNpKeys(final List<String> npKeys) {
+        return npKeys.stream()
+                .map(s -> "NP_" + s)
+                .toList();
     }
 
     private static @NotNull List<String> getListofSortedNpKeys(final Map<TaskDto, List<StudyPoint>> studyPointsPerTask) {
