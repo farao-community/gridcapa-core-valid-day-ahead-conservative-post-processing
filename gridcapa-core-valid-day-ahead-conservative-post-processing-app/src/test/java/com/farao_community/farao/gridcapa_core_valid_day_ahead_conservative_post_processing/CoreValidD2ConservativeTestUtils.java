@@ -38,14 +38,18 @@ public final class CoreValidD2ConservativeTestUtils {
                            isOver ? TaskStatus.SUCCESS : TaskStatus.CREATED,
                            List.of(),
                            List.of(),
-                           List.of(new ProcessFileDto("testFilePath", "IVA-RESULT", ProcessFileStatus.VALIDATED, "tesFileName", "testDocId", timestamp)),
+                           List.of(new ProcessFileDto("testIvaFilePath", CoreValidD2PostProcessingConstants.IVA_RESULT, ProcessFileStatus.VALIDATED, "testFileName", "testDocId", timestamp),
+                                   new ProcessFileDto("testNfpFilePath", CoreValidD2PostProcessingConstants.STUDY_POINTS, ProcessFileStatus.VALIDATED, "testFileName", "testDocId", timestamp)),
                            List.of(),
                            List.of(new ProcessRunDto(UUID.randomUUID(), timestamp, List.of()),
                                    new ProcessRunDto(UUID.randomUUID(), timestamp, List.of())),
                            List.of(new TaskParameterDto(CoreValidD2PostProcessingConstants.JUSTIFICATION_MESSAGE_ID,
                                                         CoreValidD2PostProcessingConstants.STRING_TYPE,
                                                         isOnlyDefaultMessage ? null : "justification message",
-                                                        "default message"))
+                                                        "default message"),
+                                   new TaskParameterDto(CoreValidD2PostProcessingConstants.EXPORT_STUDY_POINTS_ID,
+                                                        CoreValidD2PostProcessingConstants.BOOLEAN_TYPE,
+                                                        "true", "true"))
         );
     }
 

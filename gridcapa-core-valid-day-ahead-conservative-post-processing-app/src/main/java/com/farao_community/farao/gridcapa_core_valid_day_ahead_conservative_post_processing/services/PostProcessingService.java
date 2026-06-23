@@ -8,7 +8,9 @@ package com.farao_community.farao.gridcapa_core_valid_day_ahead_conservative_pos
 
 import com.farao_community.farao.gridcapa.task_manager.api.ProcessFileDto;
 import com.farao_community.farao.gridcapa.task_manager.api.TaskDto;
+import com.farao_community.farao.gridcapa_core_valid_commons.vertex.Vertex;
 import com.farao_community.farao.gridcapa_core_valid_day_ahead_conservative.api.domain.IvaBranchData;
+import com.farao_community.farao.gridcapa_core_valid_day_ahead_conservative.api.domain.StudyPoint;
 import com.farao_community.farao.gridcapa_core_valid_day_ahead_conservative_post_processing.configuration.CoreValidD2PostProcessingConfiguration;
 import com.farao_community.farao.gridcapa_core_valid_day_ahead_conservative_post_processing.exception.CoreValidD2PostProcessingInternalException;
 import com.farao_community.farao.gridcapa_core_valid_day_ahead_conservative_post_processing.exception.CoreValidD2PostProcessingInvalidDataException;
@@ -20,6 +22,9 @@ import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.JAXBElement;
 import jakarta.xml.bind.JAXBException;
 import jakarta.xml.bind.Marshaller;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVPrinter;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 
 import javax.xml.namespace.QName;
@@ -29,20 +34,25 @@ import java.io.InputStream;
 import java.io.StringWriter;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.function.Supplier;
 
 import static com.farao_community.farao.gridcapa.task_manager.api.ProcessFileStatus.VALIDATED;
 import static com.farao_community.farao.gridcapa_core_valid_day_ahead_conservative_post_processing.CoreValidD2PostProcessingConstants.DOMAIN_END_HEADER;
-import static com.farao_community.farao.gridcapa_core_valid_day_ahead_conservative_post_processing.CoreValidD2PostProcessingConstants.GENERATED_FILE_PATTERN;
+import static com.farao_community.farao.gridcapa_core_valid_day_ahead_conservative_post_processing.CoreValidD2PostProcessingConstants.IVA_GENERATED_FILE_PATTERN;
 import static com.farao_community.farao.gridcapa_core_valid_day_ahead_conservative_post_processing.CoreValidD2PostProcessingConstants.IVA_RESULT;
 import static com.farao_community.farao.gridcapa_core_valid_day_ahead_conservative_post_processing.CoreValidD2PostProcessingConstants.NO_ADJUSTMENT_COMMENT;
 import static com.farao_community.farao.gridcapa_core_valid_day_ahead_conservative_post_processing.CoreValidD2PostProcessingConstants.NO_BRANCH_COMMENT;
 import static com.farao_community.farao.gridcapa_core_valid_day_ahead_conservative_post_processing.CoreValidD2PostProcessingConstants.OUTPUTS_DIR;
 import static com.farao_community.farao.gridcapa_core_valid_day_ahead_conservative_post_processing.CoreValidD2PostProcessingConstants.OUTPUT_XML_RELEASE;
 import static com.farao_community.farao.gridcapa_core_valid_day_ahead_conservative_post_processing.CoreValidD2PostProcessingConstants.OUTPUT_XML_VERSION;
+import static com.farao_community.farao.gridcapa_core_valid_day_ahead_conservative_post_processing.CoreValidD2PostProcessingConstants.STUDY_POINTS;
+import static com.farao_community.farao.gridcapa_core_valid_day_ahead_conservative_post_processing.CoreValidD2PostProcessingConstants.STUDY_POINTS_HEADER_PREFIX;
+import static com.farao_community.farao.gridcapa_core_valid_day_ahead_conservative_post_processing.CoreValidD2PostProcessingConstants.STUDY_POINT_GENERATED_FILE_PATTERN;
 import static com.farao_community.farao.gridcapa_core_valid_day_ahead_conservative_post_processing.CoreValidD2PostProcessingConstants.VALIDATION_TYPE_COMMENT;
 import static com.farao_community.farao.gridcapa_core_valid_day_ahead_conservative_post_processing.CoreValidD2PostProcessingConstants.XSD_FILE_NAME;
 import static com.farao_community.farao.gridcapa_core_valid_day_ahead_conservative_post_processing.CoreValidD2PostProcessingConstants.YYYYMMDD_FORMATTER;
@@ -68,11 +78,97 @@ public class PostProcessingService {
     }
 
     public void processTasks(final LocalDate localDate,
-                             final Set<TaskDto> tasksToPostProcess) {
+                             final Set<TaskDto> tasksToPostProcess,
+                             final boolean exportStudyPoints) {
         final int outputFileVersion = getOutputFileVersion(tasksToPostProcess);
         final Map<TaskDto, List<IvaBranchData>> ivaResultsPerTask = new TreeMap<>(comparing(TaskDto::getTimestamp));
-        fillMapOfOutputs(tasksToPostProcess, ivaResultsPerTask);
+        final Map<TaskDto, List<StudyPoint>> studyPointsPerTask = new TreeMap<>(comparing(TaskDto::getTimestamp));
+        fillMapOfOutputs(tasksToPostProcess, ivaResultsPerTask, studyPointsPerTask, exportStudyPoints);
+        exportIvaResult(localDate, outputFileVersion, ivaResultsPerTask);
+        if (exportStudyPoints) {
+            exportStudyPointResult(localDate, outputFileVersion, studyPointsPerTask);
+        }
+    }
 
+    private void exportStudyPointResult(final LocalDate localDate,
+                                        final int outputFileVersion,
+                                        final Map<TaskDto, List<StudyPoint>> studyPointsPerTask) {
+        // we need the keys for the header
+        final List<String> npKeys = getListofSortedNpKeys(studyPointsPerTask);
+        final List<String> headerNpKeys = getHeaderNpKeys(npKeys);
+        final List<String> header = new ArrayList<>();
+        header.add("Periode");
+        header.add("ID");
+        header.addAll(headerNpKeys);
+        final CSVFormat csvFormat = CSVFormat.DEFAULT.builder()
+                .setHeader(header.toArray(new String[0]))
+                .setDelimiter(";")
+                .build();
+        try (final StringWriter stringWriter = new StringWriter();
+             final CSVPrinter csvPrinter = new CSVPrinter(stringWriter, csvFormat)) {
+            studyPointsPerTask.forEach((taskDto, studyPoints) -> {
+                studyPoints.forEach(studyPoint -> {
+                    final int position = studyPoint.position();
+                    myCsvPrint(csvPrinter, position);
+                    final Vertex vertex = studyPoint.vertex();
+                    final String id = position + "_" + vertex.vertexId();
+                    myCsvPrint(csvPrinter, id);
+                    final Map<String, Integer> nps = vertex.coordinates();
+                    npKeys.forEach(key -> myCsvPrint(csvPrinter, nps.get(key)));
+                    myCsvPrintln(csvPrinter);
+                });
+            });
+            csvPrinter.flush();
+            minioAdapter.uploadOutput(OUTPUTS_DIR + getOutputFileName(STUDY_POINT_GENERATED_FILE_PATTERN, localDate, outputFileVersion),
+                                      new ByteArrayInputStream(stringWriter.toString().getBytes()));
+        } catch (Exception e) {
+            throw new CoreValidD2PostProcessingInternalException("Could not generate study point document file", e);
+        }
+    }
+
+    private List<String> getHeaderNpKeys(final List<String> npKeys) {
+        return npKeys.stream()
+                .map(s -> STUDY_POINTS_HEADER_PREFIX + s)
+                .toList();
+    }
+
+    private static @NotNull List<String> getListofSortedNpKeys(final Map<TaskDto, List<StudyPoint>> studyPointsPerTask) {
+        return studyPointsPerTask.values().stream()
+                .findFirst()
+                .orElseThrow(getCoreValidD2InternalExceptionSupplier())
+                .stream().findFirst()
+                .orElseThrow(getCoreValidD2InternalExceptionSupplier())
+                .vertex()
+                .coordinates()
+                .keySet()
+                .stream()
+                .sorted()
+                .toList();
+    }
+
+    private static @NotNull Supplier<CoreValidD2PostProcessingInternalException> getCoreValidD2InternalExceptionSupplier() {
+        return () -> new CoreValidD2PostProcessingInternalException("Could not generate study point document file: no study points");
+    }
+
+    private void myCsvPrint(CSVPrinter printer, Object toPrint) {
+        try {
+            printer.print(toPrint);
+        } catch (Exception e) {
+            throw new CoreValidD2PostProcessingInternalException("Error printing CSV study point document element: " + toPrint, e);
+        }
+    }
+
+    private void myCsvPrintln(CSVPrinter printer) {
+        try {
+            printer.println();
+        } catch (Exception e) {
+            throw new CoreValidD2PostProcessingInternalException("Error printing CSV study point println", e);
+        }
+    }
+
+    private void exportIvaResult(final LocalDate localDate,
+                                 final int outputFileVersion,
+                                 final Map<TaskDto, List<IvaBranchData>> ivaResultsPerTask) {
         final FlowBasedConstraintUpdateDocument fbCtUpdateDoc = new FlowBasedConstraintUpdateDocument();
         fbCtUpdateDoc.setDtdRelease(OUTPUT_XML_RELEASE);
         fbCtUpdateDoc.setDtdVersion(OUTPUT_XML_VERSION);
@@ -83,7 +179,7 @@ public class PostProcessingService {
             generateBody(fbCtUpdateDoc, ivaResultsPerTask);
 
             final byte[] outputFileData = marshallMessageAndSetValidationTypeComment(fbCtUpdateDoc);
-            minioAdapter.uploadOutput(OUTPUTS_DIR + getOutputFileName(localDate, outputFileVersion),
+            minioAdapter.uploadOutput(OUTPUTS_DIR + getOutputFileName(IVA_GENERATED_FILE_PATTERN, localDate, outputFileVersion),
                                       new ByteArrayInputStream(outputFileData));
 
         } catch (final Exception e) {
@@ -92,15 +188,29 @@ public class PostProcessingService {
     }
 
     private void fillMapOfOutputs(final Set<TaskDto> tasksToProcess,
-                                  final Map<TaskDto, List<IvaBranchData>> ivaResults) {
+                                  final Map<TaskDto, List<IvaBranchData>> ivaResults,
+                                  final Map<TaskDto, List<StudyPoint>> studyPointsPerTask,
+                                  final boolean exportStudyPoints) {
         tasksToProcess.forEach(task ->
                                    task.getOutputs()
                                        .stream()
-                                       .filter(file -> file.getProcessFileStatus() == VALIDATED
-                                                       && IVA_RESULT.equals(file.getFileType()))
+                                       .filter(file -> fileFilterByType(file, IVA_RESULT))
                                        .map(this::getIvaResult)
                                        .forEach(iva -> ivaResults.put(task, iva))
         );
+        if (exportStudyPoints) {
+            tasksToProcess.forEach(task ->
+                                           task.getOutputs()
+                                                   .stream()
+                                                   .filter(file -> fileFilterByType(file, STUDY_POINTS))
+                                                   .map(this::getStudyPointResult)
+                                                   .forEach(studyPoint -> studyPointsPerTask.put(task, studyPoint))
+            );
+        }
+    }
+
+    private boolean fileFilterByType(final ProcessFileDto file, final String type) {
+        return file.getProcessFileStatus() == VALIDATED && type.equals(file.getFileType());
     }
 
     private static int getOutputFileVersion(final Set<TaskDto> tasksToPostProcess) {
@@ -121,10 +231,21 @@ public class PostProcessingService {
         }
     }
 
-    private String getOutputFileName(final LocalDate localDate,
+    private List<StudyPoint> getStudyPointResult(final ProcessFileDto processFileDto) {
+        try (final InputStream inputStream = minioAdapter.getFileFromFullPath(processFileDto.getFilePath())) {
+            final TypeReference<List<StudyPoint>> studyPointListTypeRef = new TypeReference<>() {
+            };
+            return new ObjectMapper().reader().forType(studyPointListTypeRef).readValue(inputStream);
+        } catch (final IOException e) {
+            throw new CoreValidD2PostProcessingInvalidDataException("Error retrieving Study Point Result", e);
+        }
+    }
+
+    private String getOutputFileName(final String pattern,
+                                     final LocalDate localDate,
                                      final int outputFileVersion) {
 
-        return String.format(GENERATED_FILE_PATTERN, localDate.format(YYYYMMDD_FORMATTER), outputFileVersion);
+        return String.format(pattern, localDate.format(YYYYMMDD_FORMATTER), outputFileVersion);
     }
 
     private byte[] marshallMessageAndSetValidationTypeComment(final FlowBasedConstraintUpdateDocument constraintUpdateDocument) {

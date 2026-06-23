@@ -8,8 +8,10 @@ package com.farao_community.farao.gridcapa_core_valid_day_ahead_conservative_pos
 
 import com.farao_community.farao.gridcapa.task_manager.api.ProcessFileStatus;
 import com.farao_community.farao.gridcapa.task_manager.api.TaskDto;
+import com.farao_community.farao.gridcapa.task_manager.api.TaskParameterDto;
 import com.farao_community.farao.gridcapa.task_manager.api.TaskStatus;
 import com.farao_community.farao.gridcapa_core_valid_day_ahead_conservative_post_processing.configuration.CoreValidD2PostProcessingConfiguration;
+import com.farao_community.farao.gridcapa_core_valid_day_ahead_conservative_post_processing.exception.CoreValidD2PostProcessingInvalidDataException;
 import com.farao_community.farao.gridcapa_core_valid_day_ahead_conservative_post_processing.services.PostProcessingService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,13 +27,21 @@ import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.function.BinaryOperator;
 import java.util.function.Consumer;
+
+import static com.farao_community.farao.gridcapa_core_valid_day_ahead_conservative_post_processing.CoreValidD2PostProcessingConstants.BOOLEAN_TYPE;
+import static com.farao_community.farao.gridcapa_core_valid_day_ahead_conservative_post_processing.CoreValidD2PostProcessingConstants.EXPORT_STUDY_POINTS_ID;
+import static com.farao_community.farao.gridcapa_core_valid_day_ahead_conservative_post_processing.CoreValidD2PostProcessingConstants.IVA_RESULT;
 
 @Service
 public class CoreValidD2PostProcessingHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(CoreValidD2PostProcessingHandler.class);
+    private static final BinaryOperator<Boolean> BOOLEAN_BINARY_OPERATOR = (aBoolean, aBoolean2) -> aBoolean && aBoolean2;
     private final CoreValidD2PostProcessingConfiguration coreValidD2PostProcessingConfiguration;
     private final RestTemplateBuilder restTemplateBuilder;
     private final PostProcessingService postProcessingService;
@@ -64,10 +74,14 @@ public class CoreValidD2PostProcessingHandler {
                 final LocalDate localDate = taskDtoUpdated.getTimestamp().atZoneSameInstant(zoneId).toLocalDate();
                 if (areAllHourlyTasksFinished(localDate)) {
                     final Set<TaskDto> allTaskDtoForBusinessDate = getAllTaskDtoForBusinessDate(localDate);
+                    final Optional<Boolean> exportStudyPoints = allTaskDtoForBusinessDate.stream()
+                            .map(TaskDto::getParameters)
+                            .map(this::shouldExportStudyPoints)
+                            .reduce(BOOLEAN_BINARY_OPERATOR);
                     // Only perform post processing if a task from local date was updated
                     final boolean anyTasksHaveBeenUpdated = allTaskDtoForBusinessDate.stream().map(TaskDto::getId).anyMatch(uuid -> uuid.equals(taskDtoUpdated.getId()));
                     if (anyTasksHaveBeenUpdated) {
-                        postProcessingService.processTasks(localDate, allTaskDtoForBusinessDate);
+                        postProcessingService.processTasks(localDate, allTaskDtoForBusinessDate, exportStudyPoints.orElse(false));
                     }
                 }
             }
@@ -135,7 +149,21 @@ public class CoreValidD2PostProcessingHandler {
     }
 
     private boolean checkAllOutputFilesValidated(final TaskDto taskDtoUpdated) {
-        return taskDtoUpdated.getOutputs().stream().allMatch(output -> output.getProcessFileStatus().equals(ProcessFileStatus.VALIDATED));
+        if (shouldExportStudyPoints(taskDtoUpdated.getParameters())) {
+            return taskDtoUpdated.getOutputs().stream().allMatch(output -> output.getProcessFileStatus().equals(ProcessFileStatus.VALIDATED));
+        } else {
+            return taskDtoUpdated.getOutputs().stream()
+                    .filter(output -> IVA_RESULT.equals(output.getFileType()))
+                    .allMatch(output -> output.getProcessFileStatus().equals(ProcessFileStatus.VALIDATED));
+        }
     }
 
+    private boolean shouldExportStudyPoints(final List<TaskParameterDto> taskParameters) {
+        return taskParameters.stream()
+                .filter(param -> BOOLEAN_TYPE.equalsIgnoreCase(param.getParameterType())
+                                 && EXPORT_STUDY_POINTS_ID.equalsIgnoreCase(param.getId()))
+                .map(taskParameterDto -> Boolean.parseBoolean(taskParameterDto.getValue()))
+                .reduce(BOOLEAN_BINARY_OPERATOR)
+                .orElseThrow(() -> new CoreValidD2PostProcessingInvalidDataException("No export study points parameter set"));
+    }
 }
