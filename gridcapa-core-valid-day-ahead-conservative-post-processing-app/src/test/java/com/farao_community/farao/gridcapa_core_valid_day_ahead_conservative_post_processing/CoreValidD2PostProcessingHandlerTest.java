@@ -58,7 +58,7 @@ class CoreValidD2PostProcessingHandlerTest {
         Mockito.when(restTemplate.getForEntity("http://test-dummy/tasks/businessdate/2025-11-28", TaskDto[].class)).thenReturn(response2);
         Mockito.when(restTemplateBuilder.build()).thenReturn(restTemplate);
         consumer.accept(taskDtoFlux);
-        Mockito.verify(postProcessingService, Mockito.atLeastOnce()).processTasks(Mockito.any(LocalDate.class), Mockito.any());
+        Mockito.verify(postProcessingService, Mockito.atLeastOnce()).processTasks(Mockito.any(LocalDate.class), Mockito.any(), Mockito.eq(true));
     }
 
     @Test
@@ -73,7 +73,7 @@ class CoreValidD2PostProcessingHandlerTest {
         Mockito.when(response1.getBody()).thenReturn(Boolean.FALSE);
         Mockito.when(restTemplate.getForEntity("http://test-dummy/tasks/businessdate/2025-11-28/allOver", Boolean.class)).thenReturn(response1);
         consumer.accept(taskDtoFlux);
-        Mockito.verify(postProcessingService, Mockito.never()).processTasks(Mockito.any(LocalDate.class), Mockito.any());
+        Mockito.verify(postProcessingService, Mockito.never()).processTasks(Mockito.any(LocalDate.class), Mockito.any(), Mockito.eq(true));
     }
 
     @Test
@@ -83,7 +83,7 @@ class CoreValidD2PostProcessingHandlerTest {
         final Flux<TaskDto> taskDtoFlux = Flux.fromStream(Stream.of(taskDto));
         final Consumer<Flux<TaskDto>> consumer = coreValidD2PostProcessingHandler.consumeTaskDtoUpdate();
         consumer.accept(taskDtoFlux);
-        Mockito.verify(postProcessingService, Mockito.never()).processTasks(Mockito.any(LocalDate.class), Mockito.any());
+        Mockito.verify(postProcessingService, Mockito.never()).processTasks(Mockito.any(LocalDate.class), Mockito.any(), Mockito.eq(true));
     }
 
     @Test
@@ -104,7 +104,7 @@ class CoreValidD2PostProcessingHandlerTest {
         Mockito.when(restTemplate.getForEntity("http://test-dummy/tasks/businessdate/2025-11-28", TaskDto[].class)).thenReturn(response2);
         Mockito.when(restTemplateBuilder.build()).thenReturn(restTemplate);
         consumer.accept(taskDtoFlux);
-        Mockito.verify(postProcessingService, Mockito.times(1)).processTasks(Mockito.any(LocalDate.class), Mockito.eq(Set.of(taskDto)));
+        Mockito.verify(postProcessingService, Mockito.never()).processTasks(Mockito.any(LocalDate.class), Mockito.eq(Set.of(taskDto)), Mockito.eq(true));
     }
 
     @Test
@@ -125,6 +125,6 @@ class CoreValidD2PostProcessingHandlerTest {
         Mockito.when(restTemplate.getForEntity("http://test-dummy/tasks/businessdate/2025-11-28", TaskDto[].class)).thenReturn(response2);
         Mockito.when(restTemplateBuilder.build()).thenReturn(restTemplate);
         consumer.accept(taskDtoFlux);
-        Mockito.verify(postProcessingService, Mockito.never()).processTasks(Mockito.any(LocalDate.class), Mockito.any());
+        Mockito.verify(postProcessingService, Mockito.never()).processTasks(Mockito.any(LocalDate.class), Mockito.any(), Mockito.eq(true));
     }
 }

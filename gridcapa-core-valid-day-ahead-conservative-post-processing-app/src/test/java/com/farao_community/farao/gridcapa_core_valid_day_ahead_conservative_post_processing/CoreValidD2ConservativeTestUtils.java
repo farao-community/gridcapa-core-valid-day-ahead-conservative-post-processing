@@ -46,7 +46,10 @@ public final class CoreValidD2ConservativeTestUtils {
                            List.of(new TaskParameterDto(CoreValidD2PostProcessingConstants.JUSTIFICATION_MESSAGE_ID,
                                                         CoreValidD2PostProcessingConstants.STRING_TYPE,
                                                         isOnlyDefaultMessage ? null : "justification message",
-                                                        "default message"))
+                                                        "default message"),
+                                   new TaskParameterDto(CoreValidD2PostProcessingConstants.EXPORT_STUDY_POINTS_ID,
+                                                        CoreValidD2PostProcessingConstants.BOOLEAN_TYPE,
+                                                        "true", "true"))
         );
     }
 

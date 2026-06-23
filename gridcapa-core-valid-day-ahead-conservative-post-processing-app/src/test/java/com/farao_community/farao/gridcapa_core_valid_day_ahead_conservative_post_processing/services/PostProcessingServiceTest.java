@@ -39,9 +39,25 @@ class PostProcessingServiceTest {
              InputStream in2 = getClass().getResource("/testStudyPointFile.json").openStream()) {
             Mockito.when(minioAdapter.getFileFromFullPath("testIvaFilePath")).thenReturn(in1);
             Mockito.when(minioAdapter.getFileFromFullPath("testNfpFilePath")).thenReturn(in2);
-            postProcessingService.processTasks(LocalDate.of(2025, 11, 28), tasks);
+            postProcessingService.processTasks(LocalDate.of(2025, 11, 28), tasks, true);
             Mockito.verify(minioAdapter, Mockito.atLeastOnce()).getFileFromFullPath("testIvaFilePath");
             Mockito.verify(minioAdapter, Mockito.atLeastOnce()).getFileFromFullPath("testNfpFilePath");
+        } catch (IOException e) {
+            fail("Failed to process tasks due to IOException: " + e.getMessage(), e);
+        }
+    }
+
+    @Test
+    void processTasksOKNoExportStudyPoints() {
+        final TaskDto taskDto = CoreValidD2ConservativeTestUtils.getTestTaskDto();
+        final Set<TaskDto> tasks = Set.of(taskDto);
+        try (InputStream in1 = getClass().getResource("/testBranchIvaFile.json").openStream();
+             InputStream in2 = getClass().getResource("/testStudyPointFile.json").openStream()) {
+            Mockito.when(minioAdapter.getFileFromFullPath("testIvaFilePath")).thenReturn(in1);
+            Mockito.when(minioAdapter.getFileFromFullPath("testNfpFilePath")).thenReturn(in2);
+            postProcessingService.processTasks(LocalDate.of(2025, 11, 28), tasks, false);
+            Mockito.verify(minioAdapter, Mockito.atLeastOnce()).getFileFromFullPath("testIvaFilePath");
+            Mockito.verify(minioAdapter, Mockito.never()).getFileFromFullPath("testNfpFilePath");
         } catch (IOException e) {
             fail("Failed to process tasks due to IOException: " + e.getMessage(), e);
         }

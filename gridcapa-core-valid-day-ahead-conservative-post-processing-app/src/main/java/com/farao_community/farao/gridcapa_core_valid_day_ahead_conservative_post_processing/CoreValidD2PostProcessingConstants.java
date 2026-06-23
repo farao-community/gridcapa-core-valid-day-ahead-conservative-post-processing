@@ -18,7 +18,9 @@ public final class CoreValidD2PostProcessingConstants {
     public static final String XFR_RTE_Q_STRING_VALUE = "10XFR-RTE------Q";
     public static final String XTSO_CS_W_STRING_VALUE = "17XTSO-CS------W";
     public static final String JUSTIFICATION_MESSAGE_ID = "JUSTIFICATION_MESSAGE";
+    public static final String EXPORT_STUDY_POINTS_ID = "EXPORT_STUDY_POINTS";
     public static final String STRING_TYPE = "STRING";
+    public static final String BOOLEAN_TYPE = "BOOLEAN";
     public static final String IVA_GENERATED_FILE_PATTERN = "%s-F310-v%s-" + XFR_RTE_Q_STRING_VALUE + "-to-" + XTSO_CS_W_STRING_VALUE + ".xml";
     public static final String VALIDATION_TYPE_COMMENT = "\t<!--validation type 1-->\n";
     public static final String NO_BRANCH_COMMENT = "\t<!--no ReturnedBranch-->\n";

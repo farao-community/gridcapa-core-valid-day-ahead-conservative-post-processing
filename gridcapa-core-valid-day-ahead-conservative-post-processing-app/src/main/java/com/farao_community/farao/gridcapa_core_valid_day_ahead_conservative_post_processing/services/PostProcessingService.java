@@ -78,13 +78,16 @@ public class PostProcessingService {
     }
 
     public void processTasks(final LocalDate localDate,
-                             final Set<TaskDto> tasksToPostProcess) {
+                             final Set<TaskDto> tasksToPostProcess,
+                             final boolean exportStudyPoints) {
         final int outputFileVersion = getOutputFileVersion(tasksToPostProcess);
         final Map<TaskDto, List<IvaBranchData>> ivaResultsPerTask = new TreeMap<>(comparing(TaskDto::getTimestamp));
         final Map<TaskDto, List<StudyPoint>> studyPointsPerTask = new TreeMap<>(comparing(TaskDto::getTimestamp));
-        fillMapOfOutputs(tasksToPostProcess, ivaResultsPerTask, studyPointsPerTask);
+        fillMapOfOutputs(tasksToPostProcess, ivaResultsPerTask, studyPointsPerTask, exportStudyPoints);
         exportIvaResult(localDate, outputFileVersion, ivaResultsPerTask);
-        exportStudyPointResult(localDate, outputFileVersion, studyPointsPerTask);
+        if (exportStudyPoints) {
+            exportStudyPointResult(localDate, outputFileVersion, studyPointsPerTask);
+        }
     }
 
     private void exportStudyPointResult(final LocalDate localDate,
@@ -186,7 +189,8 @@ public class PostProcessingService {
 
     private void fillMapOfOutputs(final Set<TaskDto> tasksToProcess,
                                   final Map<TaskDto, List<IvaBranchData>> ivaResults,
-                                  final Map<TaskDto, List<StudyPoint>> studyPointsPerTask) {
+                                  final Map<TaskDto, List<StudyPoint>> studyPointsPerTask,
+                                  final boolean exportStudyPoints) {
         tasksToProcess.forEach(task ->
                                    task.getOutputs()
                                        .stream()
@@ -194,13 +198,15 @@ public class PostProcessingService {
                                        .map(this::getIvaResult)
                                        .forEach(iva -> ivaResults.put(task, iva))
         );
-        tasksToProcess.forEach(task ->
-                                       task.getOutputs()
-                                           .stream()
-                                           .filter(file -> fileFilterByType(file, STUDY_POINTS))
-                                           .map(this::getStudyPointResult)
-                                           .forEach(studyPoint -> studyPointsPerTask.put(task, studyPoint))
-        );
+        if (exportStudyPoints) {
+            tasksToProcess.forEach(task ->
+                                           task.getOutputs()
+                                                   .stream()
+                                                   .filter(file -> fileFilterByType(file, STUDY_POINTS))
+                                                   .map(this::getStudyPointResult)
+                                                   .forEach(studyPoint -> studyPointsPerTask.put(task, studyPoint))
+            );
+        }
     }
 
     private boolean fileFilterByType(final ProcessFileDto file, final String type) {
